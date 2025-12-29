@@ -1,148 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
+import { getSukurAyetiByGun, SukurAyeti } from '../constants/sukurAyetleri';
+import { useOrucZinciri } from '../hooks/useOrucZinciri';
 
 /**
- * Oruç faydaları - günlük bilgi kartı
+ * Şükür ile ilgili günlük ayet gösterici
  */
-const ORUC_FAYDALARI = [
-  {
-    baslik: '💚 Fiziksel Sağlık',
-    icerik: 'Oruç, vücudun detoks mekanizmasını harekete geçirir ve hücre yenilenmesini destekler.',
-  },
-  {
-    baslik: '🧠 Zihinsel Berraklık',
-    icerik: 'Oruç tutmak zihinsel odaklanmayı artırır ve hafızayı güçlendirir.',
-  },
-  {
-    baslik: '❤️ Kalp Sağlığı',
-    icerik: 'Düzenli oruç, kolesterol seviyelerini düşürür ve kalp sağlığını korur.',
-  },
-  {
-    baslik: '⚖️ Kilo Kontrolü',
-    icerik: 'Oruç, metabolizmayı düzenleyerek sağlıklı kilo yönetimine yardımcı olur.',
-  },
-  {
-    baslik: '🛡️ Bağışıklık Sistemi',
-    icerik: 'Oruç, bağışıklık sistemini güçlendirir ve hastalıklara karşı direnci artırır.',
-  },
-  {
-    baslik: '🧘 Ruhsal Huzur',
-    icerik: 'Oruç, sabır ve şükür duygularını geliştirerek ruhsal huzur sağlar.',
-  },
-  {
-    baslik: '🔋 Enerji Seviyesi',
-    icerik: 'Oruç, vücudun enerji kullanımını optimize eder ve dayanıklılığı artırır.',
-  },
-  {
-    baslik: '🌱 Hücre Yenilenmesi',
-    icerik: 'Oruç, hücrelerin kendini onarma ve yenileme sürecini hızlandırır.',
-  },
-  {
-    baslik: '🧬 Uzun Ömür',
-    icerik: 'Araştırmalar, düzenli oruç tutmanın yaşam süresini uzatabileceğini gösteriyor.',
-  },
-  {
-    baslik: '💪 Kas Korunması',
-    icerik: 'Oruç, yağ yakımını artırırken kas kütlesini korumaya yardımcı olur.',
-  },
-  {
-    baslik: '🧪 İnsülin Duyarlılığı',
-    icerik: 'Oruç, insülin duyarlılığını iyileştirerek diyabet riskini azaltır.',
-  },
-  {
-    baslik: '🎯 Odaklanma',
-    icerik: 'Oruç, zihinsel netliği artırarak günlük işlerde daha iyi performans sağlar.',
-  },
-  {
-    baslik: '🌙 Uyku Kalitesi',
-    icerik: 'Oruç, uyku düzenini iyileştirerek daha kaliteli bir uyku sağlar.',
-  },
-  {
-    baslik: '🧹 Toksin Temizliği',
-    icerik: 'Oruç, vücuttaki toksinlerin atılmasını hızlandırarak temizlik sağlar.',
-  },
-  {
-    baslik: '💎 Cilt Sağlığı',
-    icerik: 'Oruç, cilt hücrelerinin yenilenmesini destekleyerek daha sağlıklı bir cilt sağlar.',
-  },
-  {
-    baslik: '🎁 Şükür ve Sabır',
-    icerik: 'Oruç, nimetlerin kıymetini anlamayı ve sabır göstermeyi öğretir.',
-  },
-  {
-    baslik: '🔬 Kanser Önleme',
-    icerik: 'Araştırmalar, orucun bazı kanser türlerine karşı koruyucu olabileceğini gösteriyor.',
-  },
-  {
-    baslik: '🧠 Beyin Sağlığı',
-    icerik: 'Oruç, beyin hücrelerinin büyümesini destekleyerek bilişsel sağlığı korur.',
-  },
-  {
-    baslik: '💧 Su Dengesi',
-    icerik: 'Oruç, vücudun su dengesini düzenleyerek optimal hidrasyon sağlar.',
-  },
-  {
-    baslik: '🌟 Manevi Gelişim',
-    icerik: 'Oruç, manevi gelişimi destekleyerek iç huzur ve barış sağlar.',
-  },
-  {
-    baslik: '⚡ Metabolik Sağlık',
-    icerik: 'Oruç, metabolik sağlığı iyileştirerek genel sağlık durumunu destekler.',
-  },
-  {
-    baslik: '🎨 Yaratıcılık',
-    icerik: 'Oruç, zihinsel netlik sağlayarak yaratıcı düşünceyi artırır.',
-  },
-  {
-    baslik: '🔄 Hücre Otofajisi',
-    icerik: 'Oruç, hücrelerin kendini temizleme sürecini (otofaji) aktive eder.',
-  },
-  {
-    baslik: '💊 İlaç Etkisi',
-    icerik: 'Oruç, vücudun doğal iyileşme mekanizmalarını harekete geçirir.',
-  },
-  {
-    baslik: '🌍 Çevre Bilinci',
-    icerik: 'Oruç, tüketim alışkanlıklarını gözden geçirerek çevre bilincini artırır.',
-  },
-  {
-    baslik: '🤝 Empati',
-    icerik: 'Oruç, açlık deneyimiyle empati kurmayı ve yardımlaşmayı öğretir.',
-  },
-  {
-    baslik: '📚 Öz Disiplin',
-    icerik: 'Oruç, öz disiplin ve irade gücünü geliştirerek kişisel gelişimi destekler.',
-  },
-  {
-    baslik: '🎯 Hedef Odaklılık',
-    icerik: 'Oruç, hedeflere odaklanmayı ve kararlılığı güçlendirir.',
-  },
-  {
-    baslik: '🌱 Büyüme Hormonu',
-    icerik: 'Oruç, büyüme hormonu seviyelerini artırarak kas ve kemik sağlığını destekler.',
-  },
-  {
-    baslik: '🧬 DNA Onarımı',
-    icerik: 'Oruç, DNA onarım mekanizmalarını aktive ederek hücre sağlığını korur.',
-  },
-  {
-    baslik: '💚 Kalp Ritmi',
-    icerik: 'Oruç, kalp ritmini düzenleyerek kardiyovasküler sağlığı iyileştirir.',
-  },
-];
-
 export const OrucFaydalari: React.FC = () => {
-  const [gununFaydasi, setGununFaydasi] = useState(ORUC_FAYDALARI[0]);
+  const { zincirHalkalari } = useOrucZinciri();
+  const [gununAyeti, setGununAyeti] = useState<SukurAyeti | null>(null);
   const [genisletildi, setGenisletildi] = useState(false);
 
   useEffect(() => {
-    // Bugünün tarihine göre günlük fayda seç
+    // Bugünün gün numarasını bul
     const bugun = new Date();
-    const gunNumarasi = bugun.getDate(); // Ayın günü (1-31)
-    const faydaIndex = (gunNumarasi - 1) % ORUC_FAYDALARI.length;
-    setGununFaydasi(ORUC_FAYDALARI[faydaIndex]);
-  }, []);
+    bugun.setHours(0, 0, 0, 0);
+    const bugununHalkasi = zincirHalkalari.find(h => {
+      const halkaTarih = new Date(h.tarih);
+      halkaTarih.setHours(0, 0, 0, 0);
+      return halkaTarih.getTime() === bugun.getTime();
+    });
+    const gunNumarasi = bugununHalkasi?.gunNumarasi || bugun.getDate();
+    
+    const ayet = getSukurAyetiByGun(gunNumarasi);
+    setGununAyeti(ayet);
+  }, [zincirHalkalari]);
+
+  if (!gununAyeti) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -152,14 +39,26 @@ export const OrucFaydalari: React.FC = () => {
         activeOpacity={0.8}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.baslik}>{gununFaydasi.baslik}</Text>
+          <Text style={styles.baslik}>Günün Şükür Ayeti</Text>
           <Text style={styles.acilmaIkon}>{genisletildi ? '▲' : '▼'}</Text>
         </View>
       </TouchableOpacity>
       
       {genisletildi && (
         <View style={styles.icerik}>
-          <Text style={styles.icerikText}>{gununFaydasi.icerik}</Text>
+          <View style={styles.ayetBilgisi}>
+            <Text style={styles.sureBaslik}>{gununAyeti.sure} Suresi</Text>
+            <Text style={styles.ayetNumarasi}>{gununAyeti.ayetNumarasi}. Ayet</Text>
+          </View>
+          
+          <ScrollView style={styles.arapcaContainer} showsVerticalScrollIndicator={false}>
+            <Text style={styles.arapca}>{gununAyeti.arapca}</Text>
+          </ScrollView>
+          
+          <View style={styles.mealContainer}>
+            <Text style={styles.mealLabel}>Türkçe Meali:</Text>
+            <Text style={styles.meal}>{gununAyeti.turkceMeal}</Text>
+          </View>
         </View>
       )}
     </View>
@@ -190,10 +89,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   baslik: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
     flex: 1,
   },
   acilmaIkon: {
@@ -208,12 +107,58 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  icerikText: {
+  ayetBilgisi: {
+    marginTop: 16,
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sureBaslik: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: ISLAMI_RENKLER.altinAcik,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  ayetNumarasi: {
     fontSize: 14,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
-    lineHeight: 20,
-    marginTop: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  arapcaContainer: {
+    maxHeight: 150,
+    marginBottom: 16,
+  },
+  arapca: {
+    fontSize: 22,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    textAlign: 'right',
+    lineHeight: 36,
     fontWeight: '500',
+    fontFamily: 'System', // Arapça font için
+  },
+  mealContainer: {
+    marginTop: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  mealLabel: {
+    fontSize: 13,
+    color: ISLAMI_RENKLER.altinAcik,
+    fontWeight: '700',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  meal: {
+    fontSize: 15,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    lineHeight: 24,
+    fontWeight: '500',
+    textAlign: 'justify',
   },
 });
 

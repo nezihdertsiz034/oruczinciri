@@ -21,11 +21,16 @@ import {
 import { BildirimAyarlari, Sehir } from '../types';
 import { SEHIRLER } from '../constants/sehirler';
 import { temizleOrucVerileri } from '../utils/orucStorage';
+import { SaatSecici } from '../components/SaatSecici';
+import { useBildirimler } from '../hooks/useBildirimler';
 
 export default function AyarlarScreen() {
+  const { bildirimleriAyarla } = useBildirimler();
   const [bildirimAyarlari, setBildirimAyarlari] = useState<BildirimAyarlari | null>(null);
   const [sehir, setSehir] = useState<Sehir | null>(null);
   const [sehirModalVisible, setSehirModalVisible] = useState(false);
+  const [sahurSaatModalVisible, setSahurSaatModalVisible] = useState(false);
+  const [iftarSaatModalVisible, setIftarSaatModalVisible] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(true);
 
   useEffect(() => {
@@ -69,8 +74,27 @@ export default function AyarlarScreen() {
       setSehir(seciliSehir);
       await kaydetSehir(seciliSehir);
       setSehirModalVisible(false);
+      // Şehir değiştiğinde bildirimleri yeniden ayarla
+      await bildirimleriAyarla();
+      Alert.alert('Başarılı', 'Şehir güncellendi. Namaz vakitleri otomatik olarak güncellenecek.');
     } catch (error) {
       Alert.alert('Hata', 'Şehir kaydedilirken bir hata oluştu.');
+    }
+  };
+
+  const handleSaatSec = async (tip: 'sahur' | 'iftar', saat: string) => {
+    if (!bildirimAyarlari) return;
+    
+    try {
+      const yeniAyarlar = {
+        ...bildirimAyarlari,
+        [tip === 'sahur' ? 'sahurSaat' : 'iftarSaat']: saat,
+      };
+      setBildirimAyarlari(yeniAyarlar);
+      await kaydetBildirimAyarlari(yeniAyarlar);
+      await bildirimleriAyarla();
+    } catch (error) {
+      Alert.alert('Hata', 'Saat kaydedilirken bir hata oluştu.');
     }
   };
 
@@ -129,17 +153,23 @@ export default function AyarlarScreen() {
           <Text style={styles.ayarBaslik}>🔔 Bildirim Ayarları</Text>
 
           <View style={styles.switchItem}>
-            <View>
+            <View style={styles.switchItemLeft}>
               <Text style={styles.switchLabel}>Sahur Hatırlatıcısı</Text>
-              <Text style={styles.switchAltLabel}>
-                {bildirimAyarlari.sahurSaat}
-              </Text>
+              <TouchableOpacity
+                onPress={() => setSahurSaatModalVisible(true)}
+                style={styles.saatButonu}
+              >
+                <Text style={styles.saatButonuText}>
+                  {bildirimAyarlari.sahurSaat}
+                </Text>
+              </TouchableOpacity>
             </View>
             <Switch
               value={bildirimAyarlari.sahurAktif}
-              onValueChange={(value) =>
-                handleBildirimAyarDegistir('sahurAktif', value)
-              }
+              onValueChange={async (value) => {
+                await handleBildirimAyarDegistir('sahurAktif', value);
+                await bildirimleriAyarla();
+              }}
               trackColor={{
                 false: 'rgba(255, 255, 255, 0.3)',
                 true: ISLAMI_RENKLER.altinOrta,
@@ -149,17 +179,23 @@ export default function AyarlarScreen() {
           </View>
 
           <View style={styles.switchItem}>
-            <View>
+            <View style={styles.switchItemLeft}>
               <Text style={styles.switchLabel}>İftar Hatırlatıcısı</Text>
-              <Text style={styles.switchAltLabel}>
-                {bildirimAyarlari.iftarSaat}
-              </Text>
+              <TouchableOpacity
+                onPress={() => setIftarSaatModalVisible(true)}
+                style={styles.saatButonu}
+              >
+                <Text style={styles.saatButonuText}>
+                  {bildirimAyarlari.iftarSaat}
+                </Text>
+              </TouchableOpacity>
             </View>
             <Switch
               value={bildirimAyarlari.iftarAktif}
-              onValueChange={(value) =>
-                handleBildirimAyarDegistir('iftarAktif', value)
-              }
+              onValueChange={async (value) => {
+                await handleBildirimAyarDegistir('iftarAktif', value);
+                await bildirimleriAyarla();
+              }}
               trackColor={{
                 false: 'rgba(255, 255, 255, 0.3)',
                 true: ISLAMI_RENKLER.altinOrta,
@@ -171,12 +207,16 @@ export default function AyarlarScreen() {
           <View style={styles.switchItem}>
             <View>
               <Text style={styles.switchLabel}>Namaz Vakitleri Bildirimleri</Text>
+              <Text style={styles.switchAltLabel}>
+                {sehir?.isim || 'İstanbul'} şehrine göre otomatik ayarlanır
+              </Text>
             </View>
             <Switch
               value={bildirimAyarlari.namazVakitleriAktif}
-              onValueChange={(value) =>
-                handleBildirimAyarDegistir('namazVakitleriAktif', value)
-              }
+              onValueChange={async (value) => {
+                await handleBildirimAyarDegistir('namazVakitleriAktif', value);
+                await bildirimleriAyarla();
+              }}
               trackColor={{
                 false: 'rgba(255, 255, 255, 0.3)',
                 true: ISLAMI_RENKLER.altinOrta,
@@ -270,6 +310,24 @@ export default function AyarlarScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Sahur Saat Seçici Modal */}
+      <SaatSecici
+        visible={sahurSaatModalVisible}
+        mevcutSaat={bildirimAyarlari?.sahurSaat || '04:00'}
+        onClose={() => setSahurSaatModalVisible(false)}
+        onSaatSec={(saat) => handleSaatSec('sahur', saat)}
+        baslik="Sahur Saatini Seçin"
+      />
+
+      {/* İftar Saat Seçici Modal */}
+      <SaatSecici
+        visible={iftarSaatModalVisible}
+        mevcutSaat={bildirimAyarlari?.iftarSaat || '19:00'}
+        onClose={() => setIftarSaatModalVisible(false)}
+        onSaatSec={(saat) => handleSaatSec('iftar', saat)}
+        baslik="İftar Saatini Seçin"
+      />
     </SafeAreaView>
   );
 }
@@ -337,6 +395,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
+  switchItemLeft: {
+    flex: 1,
+  },
   switchLabel: {
     fontSize: 16,
     color: ISLAMI_RENKLER.yaziBeyaz,
@@ -345,6 +406,20 @@ const styles = StyleSheet.create({
   switchAltLabel: {
     fontSize: 12,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    marginTop: 4,
+  },
+  saatButonu: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  saatButonuText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: ISLAMI_RENKLER.altinAcik,
   },
   sifirlaButonu: {
     backgroundColor: ISLAMI_RENKLER.kirmiziYumusak,

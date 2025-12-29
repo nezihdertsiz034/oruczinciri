@@ -47,6 +47,8 @@ export interface BildirimAyarlari {
   namazVakitleriAktif: boolean;
   gunlukHatirlaticiAktif: boolean;
   gunlukHatirlaticiSaat: string;
+  suIcmeHatirlaticiAktif: boolean;
+  suIcmeAraligi: number; // Dakika cinsinden (örn: 30 = her 30 dakikada bir)
 }
 
 // Dua

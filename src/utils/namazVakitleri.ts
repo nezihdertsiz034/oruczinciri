@@ -2,20 +2,33 @@ import { NamazVakitleri } from '../types';
 
 /**
  * Diyanet İşleri Başkanlığı API'sinden namaz vakitlerini getirir
- * @param ilId Şehir ID (örn: 34 İstanbul)
- * @param ilceId İlçe ID (opsiyonel, varsayılan: 639 İstanbul merkez)
+ * @param sehirAdi Şehir adı (örn: "Istanbul", "Ankara")
  * @returns Namaz vakitleri
  */
 export async function getNamazVakitleri(
-  ilId: number = 34,
-  ilceId: number = 639
+  sehirAdi: string = 'Istanbul'
 ): Promise<NamazVakitleri> {
   const bugun = new Date();
   const yil = bugun.getFullYear();
   const ay = String(bugun.getMonth() + 1).padStart(2, '0');
   
-  // Diyanet İşleri Başkanlığı API endpoint
-  const url = `https://api.aladhan.com/v1/calendarByCity/${yil}/${ay}?city=Istanbul&country=Turkey&method=13`;
+  // API için şehir adını normalize et (Türkçe karakterleri İngilizce'ye çevir)
+  const normalizedSehir = sehirAdi
+    .replace(/İ/g, 'I')
+    .replace(/ı/g, 'i')
+    .replace(/Ş/g, 'S')
+    .replace(/ş/g, 's')
+    .replace(/Ğ/g, 'G')
+    .replace(/ğ/g, 'g')
+    .replace(/Ü/g, 'U')
+    .replace(/ü/g, 'u')
+    .replace(/Ö/g, 'O')
+    .replace(/ö/g, 'o')
+    .replace(/Ç/g, 'C')
+    .replace(/ç/g, 'c');
+  
+  // Aladhan API endpoint - şehre göre
+  const url = `https://api.aladhan.com/v1/calendarByCity/${yil}/${ay}?city=${encodeURIComponent(normalizedSehir)}&country=Turkey&method=13`;
 
   try {
     const response = await fetch(url);

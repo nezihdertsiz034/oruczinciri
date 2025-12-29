@@ -68,9 +68,6 @@ export default function HomeScreen() {
           <HadisGosterici gunNumarasi={bugununGunNumarasi} />
         </View>
 
-        {/* Oruç Faydaları - Günlük Bilgi */}
-        <OrucFaydalari />
-
         {/* Akordeon Menü Bölümü */}
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>📱 Menü</Text>

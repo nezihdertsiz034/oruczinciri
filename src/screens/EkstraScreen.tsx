@@ -21,25 +21,89 @@ import {
   yukleSadakalar,
   kaydetSadaka,
   getirToplamSadaka,
+  yukleBildirimAyarlari,
+  kaydetBildirimAyarlari,
 } from '../utils/storage';
+import { useBildirimler } from '../hooks/useBildirimler';
 import { Teravih, Sadaka } from '../types';
 import { tarihToString } from '../utils/ramazanTarihleri';
 
 export default function EkstraScreen() {
   const { kibleYonu, yukleniyor: kibleYukleniyor, hata: kibleHata } = useKibleYonu();
+  const { bildirimleriAyarla } = useBildirimler();
   const [teravihler, setTeravihler] = useState<Teravih[]>([]);
   const [sadakalar, setSadakalar] = useState<Sadaka[]>([]);
   const [toplamSadaka, setToplamSadaka] = useState(0);
   const [suHatirlatici, setSuHatirlatici] = useState(false);
+  const [suIcmeAraligi, setSuIcmeAraligi] = useState('30');
   const [teravihModalVisible, setTeravihModalVisible] = useState(false);
   const [sadakaModalVisible, setSadakaModalVisible] = useState(false);
   const [seciliTeravih, setSeciliTeravih] = useState<Teravih | null>(null);
   const [sadakaMiktar, setSadakaMiktar] = useState('');
   const [sadakaAciklama, setSadakaAciklama] = useState('');
+  
+  // Hesaplayıcılar için state'ler
+  const [zekatMalVarligi, setZekatMalVarligi] = useState('');
+  const [zekatSonuc, setZekatSonuc] = useState<number | null>(null);
+  const [fitreKisiSayisi, setFitreKisiSayisi] = useState('1');
+  const [fitreSonuc, setFitreSonuc] = useState<number | null>(null);
+  const [kaloriMenuler, setKaloriMenuler] = useState<Array<{isim: string, kalori: string}>>([]);
+  const [toplamKalori, setToplamKalori] = useState(0);
 
   useEffect(() => {
     verileriYukle();
+    bildirimAyarlariniYukle();
   }, []);
+
+  const bildirimAyarlariniYukle = async () => {
+    try {
+      const ayarlar = await yukleBildirimAyarlari();
+      setSuHatirlatici(ayarlar.suIcmeHatirlaticiAktif || false);
+      setSuIcmeAraligi(String(ayarlar.suIcmeAraligi || 30));
+    } catch (error) {
+      console.error('Bildirim ayarları yüklenirken hata:', error);
+    }
+  };
+
+  const suHatirlaticiDegistir = async (aktif: boolean) => {
+    try {
+      setSuHatirlatici(aktif);
+      const ayarlar = await yukleBildirimAyarlari();
+      const guncellenmisAyarlar = {
+        ...ayarlar,
+        suIcmeHatirlaticiAktif: aktif,
+        suIcmeAraligi: parseInt(suIcmeAraligi) || 30,
+      };
+      await kaydetBildirimAyarlari(guncellenmisAyarlar);
+      await bildirimleriAyarla();
+      Alert.alert('Başarılı', aktif ? 'Sahur su içme hatırlatıcısı aktif edildi.' : 'Sahur su içme hatırlatıcısı kapatıldı.');
+    } catch (error) {
+      console.error('Bildirim ayarları kaydedilirken hata:', error);
+      Alert.alert('Hata', 'Ayarlar kaydedilirken bir hata oluştu.');
+    }
+  };
+
+  const suIcmeAraligiDegistir = async (aralik: string) => {
+    try {
+      const aralikNum = parseInt(aralik);
+      if (isNaN(aralikNum) || aralikNum < 15 || aralikNum > 120) {
+        Alert.alert('Hata', 'Aralık 15-120 dakika arasında olmalıdır.');
+        return;
+      }
+      setSuIcmeAraligi(aralik);
+      const ayarlar = await yukleBildirimAyarlari();
+      const guncellenmisAyarlar = {
+        ...ayarlar,
+        suIcmeAraligi: aralikNum,
+      };
+      await kaydetBildirimAyarlari(guncellenmisAyarlar);
+      if (suHatirlatici) {
+        await bildirimleriAyarla();
+      }
+    } catch (error) {
+      console.error('Bildirim ayarları kaydedilirken hata:', error);
+    }
+  };
 
   const verileriYukle = async () => {
     try {
@@ -117,10 +181,186 @@ export default function EkstraScreen() {
 
   const tamamlananTeravihSayisi = teravihler.filter(t => t.tamamlandi).length;
 
+  // Zekat hesaplama (Mal varlığının %2.5'i)
+  const hesaplaZekat = () => {
+    const malVarligi = parseFloat(zekatMalVarligi);
+    if (isNaN(malVarligi) || malVarligi <= 0) {
+      Alert.alert('Hata', 'Lütfen geçerli bir mal varlığı girin.');
+      return;
+    }
+    // Nisab miktarı (2026 için yaklaşık 85 gram altın değeri)
+    const nisab = 85000; // Yaklaşık 85 gram altın değeri (TL)
+    if (malVarligi < nisab) {
+      Alert.alert('Bilgi', `Mal varlığınız nisab miktarının (${nisab.toLocaleString('tr-TR')} ₺) altında. Zekat vermeniz gerekmez.`);
+      setZekatSonuc(0);
+      return;
+    }
+    const zekat = malVarligi * 0.025; // %2.5
+    setZekatSonuc(zekat);
+  };
+
+  // Fitre hesaplama (2026 için yaklaşık değer)
+  const hesaplaFitre = () => {
+    const kisiSayisi = parseInt(fitreKisiSayisi);
+    if (isNaN(kisiSayisi) || kisiSayisi <= 0) {
+      Alert.alert('Hata', 'Lütfen geçerli bir kişi sayısı girin.');
+      return;
+    }
+    // 2026 için fitre miktarı (yaklaşık 1.5 kg buğday değeri)
+    const fitreMiktari = 150; // TL (yaklaşık değer, güncel fiyatlara göre güncellenebilir)
+    const toplam = fitreMiktari * kisiSayisi;
+    setFitreSonuc(toplam);
+  };
+
+  // Kalori hesaplama
+  const kaloriEkle = () => {
+    const yeniMenu = { isim: '', kalori: '' };
+    setKaloriMenuler([...kaloriMenuler, yeniMenu]);
+  };
+
+  const kaloriGuncelle = (index: number, field: 'isim' | 'kalori', value: string) => {
+    const guncellenmis = [...kaloriMenuler];
+    guncellenmis[index] = { ...guncellenmis[index], [field]: value };
+    setKaloriMenuler(guncellenmis);
+    
+    // Toplam kaloriyi hesapla
+    const toplam = guncellenmis.reduce((sum, menu) => {
+      const kalori = parseFloat(menu.kalori) || 0;
+      return sum + kalori;
+    }, 0);
+    setToplamKalori(toplam);
+  };
+
+  const kaloriSil = (index: number) => {
+    const guncellenmis = kaloriMenuler.filter((_, i) => i !== index);
+    setKaloriMenuler(guncellenmis);
+    
+    const toplam = guncellenmis.reduce((sum, menu) => {
+      const kalori = parseFloat(menu.kalori) || 0;
+      return sum + kalori;
+    }, 0);
+    setToplamKalori(toplam);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>✨ Ekstra Özellikler</Text>
+
+        {/* Zekat Hesaplayıcı */}
+        <View style={styles.bolum}>
+          <Text style={styles.bolumBaslik}>💰 Zekat Hesaplayıcı</Text>
+          <Text style={styles.bilgiText}>
+            Mal varlığınızın nisab miktarını (85 gr altın değeri) aşması durumunda zekat vermeniz gerekir.
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Mal varlığı (₺)"
+            placeholderTextColor={ISLAMI_RENKLER.yaziBeyazYumusak}
+            value={zekatMalVarligi}
+            onChangeText={setZekatMalVarligi}
+            keyboardType="decimal-pad"
+          />
+          <TouchableOpacity
+            style={styles.hesaplaButonu}
+            onPress={hesaplaZekat}
+          >
+            <Text style={styles.hesaplaButonuText}>Hesapla</Text>
+          </TouchableOpacity>
+          {zekatSonuc !== null && (
+            <View style={styles.sonucKart}>
+              <Text style={styles.sonucLabel}>Zekat Miktarı:</Text>
+              <Text style={styles.sonucDeger}>{zekatSonuc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</Text>
+              <Text style={styles.sonucAciklama}>
+                (Mal varlığınızın %2.5'i)
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Fitre Hesaplayıcı */}
+        <View style={styles.bolum}>
+          <Text style={styles.bolumBaslik}>🌾 Fitre Hesaplayıcı</Text>
+          <Text style={styles.bilgiText}>
+            Fitre, Ramazan ayında verilmesi gereken sadakadır. Kişi başı yaklaşık 150 ₺ (2026).
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Kişi sayısı"
+            placeholderTextColor={ISLAMI_RENKLER.yaziBeyazYumusak}
+            value={fitreKisiSayisi}
+            onChangeText={setFitreKisiSayisi}
+            keyboardType="number-pad"
+          />
+          <TouchableOpacity
+            style={styles.hesaplaButonu}
+            onPress={hesaplaFitre}
+          >
+            <Text style={styles.hesaplaButonuText}>Hesapla</Text>
+          </TouchableOpacity>
+          {fitreSonuc !== null && (
+            <View style={styles.sonucKart}>
+              <Text style={styles.sonucLabel}>Toplam Fitre:</Text>
+              <Text style={styles.sonucDeger}>{fitreSonuc.toLocaleString('tr-TR')} ₺</Text>
+              <Text style={styles.sonucAciklama}>
+                ({fitreKisiSayisi} kişi × 150 ₺)
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* İftar Kalori Hesaplayıcı */}
+        <View style={styles.bolum}>
+          <View style={styles.bolumHeader}>
+            <Text style={styles.bolumBaslik}>🍽️ İftar Kalori Takibi</Text>
+            <TouchableOpacity
+              style={styles.ekleButonu}
+              onPress={kaloriEkle}
+            >
+              <Text style={styles.ekleButonuText}>+</Text>
+            </TouchableOpacity>
+          </View>
+          {kaloriMenuler.length > 0 && (
+            <>
+              {kaloriMenuler.map((menu, index) => (
+                <View key={index} style={styles.kaloriItem}>
+                  <TextInput
+                    style={[styles.kaloriInput, { flex: 2 }]}
+                    placeholder="Yemek adı"
+                    placeholderTextColor={ISLAMI_RENKLER.yaziBeyazYumusak}
+                    value={menu.isim}
+                    onChangeText={(value) => kaloriGuncelle(index, 'isim', value)}
+                  />
+                  <TextInput
+                    style={[styles.kaloriInput, { flex: 1, marginLeft: 8 }]}
+                    placeholder="Kalori"
+                    placeholderTextColor={ISLAMI_RENKLER.yaziBeyazYumusak}
+                    value={menu.kalori}
+                    onChangeText={(value) => kaloriGuncelle(index, 'kalori', value)}
+                    keyboardType="decimal-pad"
+                  />
+                  <TouchableOpacity
+                    style={styles.silButonu}
+                    onPress={() => kaloriSil(index)}
+                  >
+                    <Text style={styles.silButonuText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {toplamKalori > 0 && (
+                <View style={styles.toplamKaloriKart}>
+                  <Text style={styles.toplamKaloriLabel}>Toplam Kalori:</Text>
+                  <Text style={styles.toplamKaloriDeger}>{toplamKalori.toLocaleString('tr-TR')} kcal</Text>
+                </View>
+              )}
+            </>
+          )}
+          {kaloriMenuler.length === 0 && (
+            <Text style={styles.bilgiText}>
+              İftar menünüze eklemek için + butonuna tıklayın.
+            </Text>
+          )}
+        </View>
 
         {/* Kıble Yönü */}
         <KibleYonuComponent
@@ -184,12 +424,15 @@ export default function EkstraScreen() {
 
         {/* Su İçme Hatırlatıcısı */}
         <View style={styles.bolum}>
-          <Text style={styles.bolumBaslik}>💧 Su İçme Hatırlatıcısı</Text>
+          <Text style={styles.bolumBaslik}>💧 Sahur Su İçme Hatırlatıcısı</Text>
+          <Text style={styles.bilgiText}>
+            2026 Ramazan ayı için sahur saatlerinden önce su içme hatırlatıcıları. Sahur saatinden sonra hatırlatma yapılmaz.
+          </Text>
           <View style={styles.switchContainer}>
             <Text style={styles.switchLabel}>Hatırlatıcıyı Aktif Et</Text>
             <Switch
               value={suHatirlatici}
-              onValueChange={setSuHatirlatici}
+              onValueChange={suHatirlaticiDegistir}
               trackColor={{
                 false: 'rgba(255, 255, 255, 0.3)',
                 true: ISLAMI_RENKLER.altinOrta,
@@ -198,15 +441,27 @@ export default function EkstraScreen() {
             />
           </View>
           {suHatirlatici && (
-            <Text style={styles.bilgiText}>
-              Su içme hatırlatıcısı yakında eklenecek.
-            </Text>
+            <View style={styles.aralikContainer}>
+              <Text style={styles.switchLabel}>Hatırlatma Aralığı (dakika)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="30"
+                placeholderTextColor={ISLAMI_RENKLER.yaziBeyazYumusak}
+                value={suIcmeAraligi}
+                onChangeText={setSuIcmeAraligi}
+                onBlur={() => suIcmeAraligiDegistir(suIcmeAraligi)}
+                keyboardType="number-pad"
+              />
+              <Text style={styles.bilgiText}>
+                Her {suIcmeAraligi} dakikada bir sahur saatinden önce hatırlatılacak (15-120 dakika arası).
+              </Text>
+            </View>
           )}
         </View>
 
         {/* İftar Menüsü Önerileri */}
         <View style={styles.bolum}>
-          <Text style={styles.bolumBaslik}>🍽️ İftar Menüsü Önerileri</Text>
+          <Text style={styles.bolumBaslik}>💡 İftar Menüsü Önerileri</Text>
           <View style={styles.menuListContainer}>
             {[
               'Çorba (Mercimek, Yayla, Tarhana)',
@@ -404,6 +659,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: ISLAMI_RENKLER.yaziBeyaz,
   },
+  aralikContainer: {
+    marginTop: 16,
+  },
   bilgiText: {
     fontSize: 14,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
@@ -484,6 +742,92 @@ const styles = StyleSheet.create({
     color: ISLAMI_RENKLER.yaziBeyaz,
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  hesaplaButonu: {
+    backgroundColor: ISLAMI_RENKLER.altinOrta,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  hesaplaButonuText: {
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  sonucKart: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: ISLAMI_RENKLER.altinAcik,
+  },
+  sonucLabel: {
+    fontSize: 14,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    marginBottom: 8,
+  },
+  sonucDeger: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: ISLAMI_RENKLER.altinAcik,
+    marginBottom: 4,
+  },
+  sonucAciklama: {
+    fontSize: 12,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    fontStyle: 'italic',
+  },
+  kaloriItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  kaloriInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 10,
+    padding: 12,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  silButonu: {
+    backgroundColor: 'rgba(198, 40, 40, 0.3)',
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  silButonuText: {
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  toplamKaloriKart: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: ISLAMI_RENKLER.yesilParlak,
+  },
+  toplamKaloriLabel: {
+    fontSize: 16,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    fontWeight: '600',
+  },
+  toplamKaloriDeger: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: ISLAMI_RENKLER.yesilParlak,
   },
 });
 

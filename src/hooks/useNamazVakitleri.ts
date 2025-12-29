@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NamazVakitleri } from '../types';
 import { getNamazVakitleri } from '../utils/namazVakitleri';
+import { yukleSehir } from '../utils/storage';
 
 /**
  * Namaz vakitlerini yükleyen ve yöneten hook
@@ -21,9 +22,12 @@ export function useNamazVakitleri() {
       try {
         setYukleniyor(true);
         setHata(null);
-        const vakitlerData = await getNamazVakitleri();
+        // Şehir bilgisini yükle ve namaz vakitlerini şehre göre çek
+        const sehir = await yukleSehir();
+        const sehirAdi = sehir?.isim || 'Istanbul';
+        const vakitlerData = await getNamazVakitleri(sehirAdi);
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/cc9fe6a4-66fd-4da1-9ddb-eb4d27168ce9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useNamazVakitleri.ts:19',message:'Vakitler yüklendi',data:{vakitlerData,hasData:!!vakitlerData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/cc9fe6a4-66fd-4da1-9ddb-eb4d27168ce9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useNamazVakitleri.ts:19',message:'Vakitler yüklendi',data:{vakitlerData,hasData:!!vakitlerData,sehir:sehirAdi},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
         // #endregion
         setVakitler(vakitlerData);
       } catch (err) {

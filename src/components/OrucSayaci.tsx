@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { NamazVakitleri } from '../types';
 import { saatFarkiHesapla, saniyeToZaman } from '../utils/namazVakitleri';
 import { ISLAMI_RENKLER } from '../constants/renkler';
+import { getSukurAyetiByGun, SukurAyeti } from '../constants/sukurAyetleri';
+import { useOrucZinciri } from '../hooks/useOrucZinciri';
 
 interface OrucSayaciProps {
   vakitler: NamazVakitleri | null;
@@ -13,8 +15,10 @@ interface OrucSayaciProps {
  * Sabah ezanı ile akşam namazı arasındaki süreyi gösteren sayaç bileşeni
  */
 export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = false }) => {
+  const { zincirHalkalari } = useOrucZinciri();
   const [kalanSure, setKalanSure] = useState<number | null>(null);
   const [durum, setDurum] = useState<'beklemede' | 'devam' | 'bitti'>('beklemede');
+  const [gununAyeti, setGununAyeti] = useState<SukurAyeti | null>(null);
 
   useEffect(() => {
     if (!vakitler) return;
@@ -58,6 +62,21 @@ export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = f
 
     return () => clearInterval(timer);
   }, [vakitler]);
+
+  // Şükür ayetini yükle
+  useEffect(() => {
+    const bugun = new Date();
+    bugun.setHours(0, 0, 0, 0);
+    const bugununHalkasi = zincirHalkalari.find(h => {
+      const halkaTarih = new Date(h.tarih);
+      halkaTarih.setHours(0, 0, 0, 0);
+      return halkaTarih.getTime() === bugun.getTime();
+    });
+    const gunNumarasi = bugununHalkasi?.gunNumarasi || bugun.getDate();
+    
+    const ayet = getSukurAyetiByGun(gunNumarasi);
+    setGununAyeti(ayet);
+  }, [zincirHalkalari]);
 
   if (yukleniyor) {
     return (
@@ -106,6 +125,32 @@ export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = f
         </View>
       )}
 
+      {durum === 'bitti' && (
+        <>
+          <View style={styles.bittiContainer}>
+            <Text style={styles.bittiText}>🎉</Text>
+          </View>
+          
+          {gununAyeti && (
+            <View style={styles.sukurAyetiContainer}>
+              <View style={styles.ayetBilgisi}>
+                <Text style={styles.sureBaslik}>{gununAyeti.sure} Suresi</Text>
+                <Text style={styles.ayetNumarasi}>{gununAyeti.ayetNumarasi}. Ayet</Text>
+              </View>
+              
+              <ScrollView style={styles.arapcaContainer} showsVerticalScrollIndicator={false}>
+                <Text style={styles.arapca}>{gununAyeti.arapca}</Text>
+              </ScrollView>
+              
+              <View style={styles.mealContainer}>
+                <Text style={styles.mealLabel}>Türkçe Meali:</Text>
+                <Text style={styles.meal}>{gununAyeti.turkceMeal}</Text>
+              </View>
+            </View>
+          )}
+        </>
+      )}
+
       <View style={styles.vakitBilgisi}>
         <Text style={styles.vakitText}>
           🌅 Sabah Ezanı: <Text style={styles.vakitSaat}>{vakitler.imsak}</Text>
@@ -145,12 +190,15 @@ const styles = StyleSheet.create({
     color: ISLAMI_RENKLER.yaziBeyaz,
   },
   durumText: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 24,
+    fontWeight: '900',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    marginBottom: 28,
+    marginBottom: 32,
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   sayacContainer: {
     flexDirection: 'row',
@@ -160,24 +208,24 @@ const styles = StyleSheet.create({
   },
   zamanKutusu: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    padding: 20,
-    borderRadius: 20,
-    minWidth: 90,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    padding: 24,
+    borderRadius: 24,
+    minWidth: 100,
+    borderWidth: 2,
+    borderColor: ISLAMI_RENKLER.altinOrta,
+    shadowColor: ISLAMI_RENKLER.altinOrta,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   zamanSayisi: {
-    fontSize: 44,
-    fontWeight: '800',
+    fontSize: 52,
+    fontWeight: '900',
     color: ISLAMI_RENKLER.yaziBeyaz,
     marginBottom: 8,
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
   zamanEtiketi: {
     fontSize: 11,
@@ -186,10 +234,77 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   ikiNokta: {
-    fontSize: 36,
+    fontSize: 44,
     fontWeight: 'bold',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    marginHorizontal: 10,
+    marginHorizontal: 12,
+  },
+  bittiContainer: {
+    padding: 24,
+    marginBottom: 16,
+  },
+  bittiText: {
+    fontSize: 48,
+    textAlign: 'center',
+  },
+  sukurAyetiContainer: {
+    width: '100%',
+    marginTop: 8,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  ayetBilgisi: {
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sureBaslik: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: ISLAMI_RENKLER.altinAcik,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  ayetNumarasi: {
+    fontSize: 14,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  arapcaContainer: {
+    maxHeight: 120,
+    marginBottom: 16,
+  },
+  arapca: {
+    fontSize: 20,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    textAlign: 'right',
+    lineHeight: 32,
+    fontWeight: '500',
+    fontFamily: 'System',
+  },
+  mealContainer: {
+    marginTop: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  mealLabel: {
+    fontSize: 13,
+    color: ISLAMI_RENKLER.altinAcik,
+    fontWeight: '700',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  meal: {
+    fontSize: 15,
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    lineHeight: 24,
+    fontWeight: '500',
+    textAlign: 'justify',
   },
   vakitBilgisi: {
     width: '100%',
