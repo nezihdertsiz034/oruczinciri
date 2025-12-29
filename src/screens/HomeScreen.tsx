@@ -6,6 +6,8 @@ import { DiniDuvarSaati } from '../components/DiniDuvarSaati';
 import { OrucSayaci } from '../components/OrucSayaci';
 import { OrucZinciri } from '../components/OrucZinciri';
 import { HadisGosterici } from '../components/HadisGosterici';
+import { AkordeonMenu } from '../components/AkordeonMenu';
+import { OrucFaydalari } from '../components/OrucFaydalari';
 import { useNamazVakitleri } from '../hooks/useNamazVakitleri';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
 import { useBildirimler } from '../hooks/useBildirimler';
@@ -66,44 +68,92 @@ export default function HomeScreen() {
           <HadisGosterici gunNumarasi={bugununGunNumarasi} />
         </View>
 
-        {/* Menü butonları */}
-        <View style={styles.menuContainer}>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('İstatistikler' as never)}
-          >
-            <Text style={styles.menuButtonText}>📊 İstatistikler</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Dualar' as never)}
-          >
-            <Text style={styles.menuButtonText}>🤲 Dualar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Kur\'an Ayetleri' as never)}
-          >
-            <Text style={styles.menuButtonText}>📖 Kur'an</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Notlar' as never)}
-          >
-            <Text style={styles.menuButtonText}>📝 Notlar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Ekstra Özellikler' as never)}
-          >
-            <Text style={styles.menuButtonText}>✨ Ekstra</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Ayarlar' as never)}
-          >
-            <Text style={styles.menuButtonText}>⚙️ Ayarlar</Text>
-          </TouchableOpacity>
+        {/* Oruç Faydaları - Günlük Bilgi */}
+        <OrucFaydalari />
+
+        {/* Akordeon Menü Bölümü */}
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>📱 Menü</Text>
+          <AkordeonMenu
+            kategoriler={[
+              {
+                id: 'takip',
+                baslik: 'Takip ve İstatistikler',
+                ikon: '📊',
+                items: [
+                  {
+                    id: 'istatistikler',
+                    ikon: '📊',
+                    baslik: 'İstatistikler',
+                    aciklama: 'Oruç performansınızı görüntüleyin',
+                    onPress: () => navigation.navigate('İstatistikler' as never),
+                    renk: ISLAMI_RENKLER.maviAcik,
+                  },
+                ],
+              },
+              {
+                id: 'dini',
+                baslik: 'Dini İçerikler',
+                ikon: '📿',
+                items: [
+                  {
+                    id: 'dualar',
+                    ikon: '🤲',
+                    baslik: 'Dualar',
+                    aciklama: 'Sahur ve iftar duaları',
+                    onPress: () => navigation.navigate('Dualar' as never),
+                    renk: ISLAMI_RENKLER.altinAcik,
+                  },
+                  {
+                    id: 'kuran',
+                    ikon: '📖',
+                    baslik: 'Kur\'an Ayetleri',
+                    aciklama: 'Günlük ayetler ve sureler',
+                    onPress: () => navigation.navigate('Kur\'an Ayetleri' as never),
+                    renk: ISLAMI_RENKLER.yesilParlak,
+                  },
+                ],
+              },
+              {
+                id: 'kisisel',
+                baslik: 'Kişisel',
+                ikon: '📝',
+                items: [
+                  {
+                    id: 'notlar',
+                    ikon: '📝',
+                    baslik: 'Notlar',
+                    aciklama: 'Kişisel notlarınızı kaydedin',
+                    onPress: () => navigation.navigate('Notlar' as never),
+                    renk: ISLAMI_RENKLER.maviCokAcik,
+                  },
+                ],
+              },
+              {
+                id: 'ozellikler',
+                baslik: 'Özellikler ve Ayarlar',
+                ikon: '⚙️',
+                items: [
+                  {
+                    id: 'ekstra',
+                    ikon: '✨',
+                    baslik: 'Ekstra Özellikler',
+                    aciklama: 'Kıble yönü, teravih ve daha fazlası',
+                    onPress: () => navigation.navigate('Ekstra Özellikler' as never),
+                    renk: ISLAMI_RENKLER.altinParlak,
+                  },
+                  {
+                    id: 'ayarlar',
+                    ikon: '⚙️',
+                    baslik: 'Ayarlar',
+                    aciklama: 'Bildirimler ve uygulama ayarları',
+                    onPress: () => navigation.navigate('Ayarlar' as never),
+                    renk: ISLAMI_RENKLER.griOrta,
+                  },
+                ],
+              },
+            ]}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -134,28 +184,17 @@ const styles = StyleSheet.create({
   hadisContainer: {
     marginTop: 8,
   },
-  menuContainer: {
-    margin: 16,
-    marginTop: 24,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
+  menuSection: {
+    marginTop: 8,
+    marginBottom: 8,
   },
-  menuButton: {
-    flex: 1,
-    minWidth: '30%',
-    padding: 16,
-    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  menuButtonText: {
+  menuSectionTitle: {
+    fontSize: 24,
+    fontWeight: '800',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    fontSize: 14,
-    fontWeight: '600',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    letterSpacing: 0.5,
   },
 });
 

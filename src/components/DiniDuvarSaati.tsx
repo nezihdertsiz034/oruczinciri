@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
+import { useNamazVakitleri } from '../hooks/useNamazVakitleri';
 
 /**
- * Dini motifli duvar saati bileşeni
+ * Minimal analog saat bileşeni (akrep-yelkovanlı)
  */
 export const DiniDuvarSaati: React.FC = () => {
   const [saat, setSaat] = useState(new Date());
+  const { vakitler } = useNamazVakitleri();
+  
+  // Oruç saatleri içinde mi kontrol et
+  const [orucSaati, setOrucSaati] = useState(false);
 
   useEffect(() => {
     // Her saniye güncelle
@@ -17,21 +22,51 @@ export const DiniDuvarSaati: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formatSaat = (date: Date): string => {
-    const saat = String(date.getHours()).padStart(2, '0');
-    const dakika = String(date.getMinutes()).padStart(2, '0');
-    return `${saat}:${dakika}`;
-  };
+  useEffect(() => {
+    if (!vakitler) return;
 
-  const formatSaniye = (date: Date): string => {
-    return String(date.getSeconds()).padStart(2, '0');
-  };
+    const kontrolOrucSaati = () => {
+      const simdi = new Date();
+      const simdiSaat = simdi.getHours();
+      const simdiDakika = simdi.getMinutes();
+      const simdiToplam = simdiSaat * 3600 + simdiDakika * 60 + simdi.getSeconds();
+
+      // Sabah ezanı (imsak) ve akşam namazı saatlerini parse et
+      const [imsakSaat, imsakDakika] = vakitler.imsak.split(':').map(Number);
+      const [aksamSaat, aksamDakika] = vakitler.aksam.split(':').map(Number);
+
+      const imsakToplam = imsakSaat * 3600 + imsakDakika * 60;
+      const aksamToplam = aksamSaat * 3600 + aksamDakika * 60;
+
+      // Oruç saatleri içinde mi? (sabah ezanı ile akşam namazı arası)
+      const orucIci = simdiToplam >= imsakToplam && simdiToplam < aksamToplam;
+      setOrucSaati(orucIci);
+    };
+
+    kontrolOrucSaati();
+    const timer = setInterval(kontrolOrucSaati, 1000);
+
+    return () => clearInterval(timer);
+  }, [vakitler]);
+
+  // Saat, dakika ve saniye değerlerini al
+  const saatDegeri = saat.getHours() % 12;
+  const dakikaDegeri = saat.getMinutes();
+  const saniyeDegeri = saat.getSeconds();
+
+  // Açı hesaplamaları (derece cinsinden)
+  // Her saat 30 derece (360/12), her dakika 0.5 derece ekler
+  const akrepAcisi = (saatDegeri * 30) + (dakikaDegeri * 0.5);
+  // Her dakika 6 derece (360/60)
+  const yelkovanAcisi = dakikaDegeri * 6;
+  // Her saniye 6 derece
+  const saniyeAcisi = saniyeDegeri * 6;
 
   const formatTarih = (date: Date): string => {
-    const gunler = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    const gunler = ['Pazar', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
     const aylar = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+      'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
+      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
     ];
 
     const gun = gunler[date.getDay()];
@@ -42,55 +77,132 @@ export const DiniDuvarSaati: React.FC = () => {
     return `${gun}, ${gunNumarasi} ${ay} ${yil}`;
   };
 
-  // Hicri tarih için yaklaşık hesaplama (basitleştirilmiş)
-  const getHicriTarih = (date: Date): string => {
-    // Basit bir yaklaşık hesaplama (tam doğru değil ama gösterim için)
-    const miladiYil = date.getFullYear();
-    const hicriYil = Math.floor((miladiYil - 622) * 1.0307);
-    return `Hicri: ${hicriYil}`;
+  const formatSaat = (date: Date): string => {
+    const saat = String(date.getHours()).padStart(2, '0');
+    const dakika = String(date.getMinutes()).padStart(2, '0');
+    return `${saat}:${dakika}`;
   };
+
+  // Saat işaretlerini oluştur (12, 3, 6, 9 ve diğerleri için noktalar)
+  const saatIsaretleri = Array.from({ length: 12 }, (_, i) => {
+    const aci = i * 30; // Her saat 30 derece
+    const radyan = (aci - 90) * (Math.PI / 180); // -90 derece başlangıç (12 yönü)
+    const yaricapIsaret = 85; // İşaret yarıçapı
+    const yaricapNumara = 95; // Numara yarıçapı (daha dışarıda)
+    const xIsaret = Math.cos(radyan) * yaricapIsaret;
+    const yIsaret = Math.sin(radyan) * yaricapIsaret;
+    const xNumara = Math.cos(radyan) * yaricapNumara;
+    const yNumara = Math.sin(radyan) * yaricapNumara;
+    
+    return {
+      aci,
+      xIsaret: 100 + xIsaret, // İşaret konumu
+      yIsaret: 100 + yIsaret,
+      xNumara: 100 + xNumara, // Numara konumu
+      yNumara: 100 + yNumara,
+      buyuk: i % 3 === 0, // 12, 3, 6, 9 için büyük işaret
+      numara: i === 0 ? 12 : i, // 12 için 12, diğerleri için kendi numarası
+    };
+  });
 
   return (
     <View style={styles.container}>
-      {/* Üst dekoratif çizgi */}
-      <View style={styles.dekoratifCizgi} />
-      
-      {/* Ana saat çerçevesi */}
       <View style={styles.saatCercevesi}>
-        {/* Arka plan Arapça motif - Allah */}
-        <View style={styles.arapcaMotifContainer}>
-          <Text style={styles.arapcaMotifBuyuk}>الله</Text>
-          <Text style={styles.arapcaMotifKucuk1}>الله</Text>
-          <Text style={styles.arapcaMotifKucuk2}>الله</Text>
-        </View>
-        
-        {/* Köşe süslemeleri */}
-        <View style={[styles.koseSusleme, styles.solUst]} />
-        <View style={[styles.koseSusleme, styles.sagUst]} />
-        <View style={[styles.koseSusleme, styles.solAlt]} />
-        <View style={[styles.koseSusleme, styles.sagAlt]} />
-        
-        {/* Merkez saat */}
-        <View style={styles.saatContainer}>
-          <Text style={styles.saatMetin}>{formatSaat(saat)}</Text>
-          <View style={styles.saniyeContainer}>
-            <Text style={styles.saniyeMetin}>{formatSaniye(saat)}</Text>
+        {/* Saat kadranı */}
+        <View style={styles.kadran}>
+          {/* Saat işaretleri ve numaraları */}
+          {saatIsaretleri.map((isaret, index) => (
+            <Fragment key={index}>
+              <View
+                style={[
+                  styles.saatIsareti,
+                  isaret.buyuk && styles.saatIsaretiBuyuk,
+                  {
+                    position: 'absolute',
+                    left: isaret.xIsaret - (isaret.buyuk ? 3 : 2),
+                    top: isaret.yIsaret - (isaret.buyuk ? 3 : 2),
+                  },
+                ]}
+              />
+              {isaret.buyuk && (
+                <Text
+                  style={[
+                    styles.saatNumarasi,
+                    {
+                      position: 'absolute',
+                      left: isaret.xNumara - 7,
+                      top: isaret.yNumara - 10,
+                    },
+                  ]}
+                >
+                  {isaret.numara}
+                </Text>
+              )}
+            </Fragment>
+          ))}
+
+          {/* Yelkovan (dakika) */}
+          <View
+            style={[
+              styles.yelkovan,
+              {
+                transform: [{ rotate: `${yelkovanAcisi}deg` }],
+              },
+            ]}
+          >
+            <View style={[
+              styles.yelkovanCizgi,
+              orucSaati && styles.yelkovanCizgiOruc
+            ]} />
+          </View>
+
+          {/* Akrep (saat) */}
+          <View
+            style={[
+              styles.akrep,
+              {
+                transform: [{ rotate: `${akrepAcisi}deg` }],
+              },
+            ]}
+          >
+            <View style={[
+              styles.akrepCizgi,
+              orucSaati && styles.akrepCizgiOruc
+            ]} />
+          </View>
+
+          {/* Saniye göstergesi (ince çizgi) */}
+          <View
+            style={[
+              styles.saniye,
+              {
+                transform: [{ rotate: `${saniyeAcisi}deg` }],
+              },
+            ]}
+          >
+            <View style={[
+              styles.saniyeCizgi,
+              orucSaati && styles.saniyeCizgiOruc
+            ]} />
+          </View>
+
+          {/* Merkez nokta */}
+          <View style={[
+            styles.merkezNokta,
+            orucSaati && styles.merkezNoktaOruc
+          ]} />
+          
+          {/* Arapça Allah yazısı - merkez */}
+          <View style={styles.allahYazisiContainer}>
+            <Text style={styles.allahYazisi}>الله</Text>
           </View>
         </View>
-        
-        {/* Alt kısım - Tarih bilgisi */}
-        <View style={styles.tarihContainer}>
-          <Text style={styles.tarihMetin}>{formatTarih(saat)}</Text>
-          <Text style={styles.hicriMetin}>{getHicriTarih(saat)}</Text>
-        </View>
-      </View>
 
-      {/* Alt dekoratif çizgi */}
-      <View style={styles.dekoratifCizgi} />
-      
-      {/* Dini motifler */}
-      <View style={styles.motifContainer}>
-        <Text style={styles.motifText}>☪️ 🌙 ✨</Text>
+        {/* Alt bilgi */}
+        <View style={styles.altBilgi}>
+          <Text style={styles.saatMetin}>{formatSaat(saat)}</Text>
+          <Text style={styles.tarihMetin}>{formatTarih(saat)}</Text>
+        </View>
       </View>
     </View>
   );
@@ -102,164 +214,159 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignItems: 'center',
   },
-  dekoratifCizgi: {
-    width: '60%',
-    height: 2,
-    backgroundColor: ISLAMI_RENKLER.altinAcik,
-    marginVertical: 8,
-    borderRadius: 1,
-  },
   saatCercevesi: {
     width: '100%',
-    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
-    borderRadius: 24,
+    backgroundColor: ISLAMI_RENKLER.glassBackground,
+    borderRadius: 28,
     padding: 24,
-    borderWidth: 3,
-    borderColor: ISLAMI_RENKLER.altinOrta,
+    borderWidth: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
     elevation: 8,
-    position: 'relative',
-    minHeight: 200,
-    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
   },
-  arapcaMotifContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
+  kadran: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 0,
+    position: 'relative',
     alignItems: 'center',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    justifyContent: 'center',
+    marginBottom: 20,
   },
-  arapcaMotifBuyuk: {
-    fontSize: 90,
+  saatIsareti: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: ISLAMI_RENKLER.yaziBeyaz,
+    opacity: 0.6,
+  },
+  saatIsaretiBuyuk: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    opacity: 0.8,
+  },
+  saatNumarasi: {
+    position: 'absolute',
+    fontSize: 14,
+    fontWeight: '700',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    position: 'absolute',
-    top: '30%',
-    alignSelf: 'center',
-    opacity: 0.12,
-    writingDirection: 'rtl',
+    transform: [{ translateX: -7 }, { translateY: -7 }],
   },
-  arapcaMotifKucuk1: {
-    fontSize: 45,
-    color: ISLAMI_RENKLER.yaziBeyaz,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  akrep: {
     position: 'absolute',
-    top: '8%',
-    right: '8%',
-    opacity: 0.08,
-    writingDirection: 'rtl',
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 20,
   },
-  arapcaMotifKucuk2: {
-    fontSize: 45,
-    color: ISLAMI_RENKLER.yaziBeyaz,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    position: 'absolute',
-    bottom: '8%',
-    left: '8%',
-    opacity: 0.08,
-    writingDirection: 'rtl',
+  akrepCizgi: {
+    width: 4,
+    height: 60,
+    backgroundColor: ISLAMI_RENKLER.yaziBeyaz,
+    borderRadius: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
-  koseSusleme: {
+  akrepCizgiOruc: {
+    backgroundColor: ISLAMI_RENKLER.altinAcik,
+    shadowColor: ISLAMI_RENKLER.altinAcik,
+    shadowOpacity: 0.5,
+  },
+  yelkovan: {
     position: 'absolute',
-    width: 30,
-    height: 30,
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 10,
+  },
+  yelkovanCizgi: {
+    width: 3,
+    height: 80,
+    backgroundColor: ISLAMI_RENKLER.yaziBeyaz,
+    borderRadius: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  yelkovanCizgiOruc: {
+    backgroundColor: ISLAMI_RENKLER.altinAcik,
+    shadowColor: ISLAMI_RENKLER.altinAcik,
+    shadowOpacity: 0.5,
+  },
+  saniye: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 5,
+  },
+  saniyeCizgi: {
+    width: 1,
+    height: 90,
+    backgroundColor: ISLAMI_RENKLER.altinAcik,
+    opacity: 0.7,
+  },
+  saniyeCizgiOruc: {
+    backgroundColor: ISLAMI_RENKLER.altinParlak,
+    opacity: 1,
+  },
+  merkezNokta: {
+    position: 'absolute',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: ISLAMI_RENKLER.yaziBeyaz,
     borderWidth: 2,
-    borderColor: ISLAMI_RENKLER.altinAcik,
+    borderColor: ISLAMI_RENKLER.arkaPlanYesil,
+    zIndex: 10,
   },
-  solUst: {
-    top: 12,
-    left: 12,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 8,
+  merkezNoktaOruc: {
+    backgroundColor: ISLAMI_RENKLER.altinAcik,
+    borderColor: ISLAMI_RENKLER.altinParlak,
   },
-  sagUst: {
-    top: 12,
-    right: 12,
-    borderLeftWidth: 0,
-    borderBottomWidth: 0,
-    borderTopRightRadius: 8,
-  },
-  solAlt: {
-    bottom: 12,
-    left: 12,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 8,
-  },
-  sagAlt: {
-    bottom: 12,
-    right: 12,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-    borderBottomRightRadius: 8,
-  },
-  saatContainer: {
+  allahYazisiContainer: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 20,
+    zIndex: 1,
+  },
+  allahYazisi: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    opacity: 0.3,
+    writingDirection: 'rtl',
+    textAlign: 'center',
+  },
+  altBilgi: {
+    alignItems: 'center',
+    marginTop: 8,
   },
   saatMetin: {
-    fontSize: 64,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-  },
-  saniyeContainer: {
-    marginTop: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  saniyeMetin: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: ISLAMI_RENKLER.altinAcik,
     letterSpacing: 1,
-  },
-  tarihContainer: {
-    alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  tarihMetin: {
-    fontSize: 16,
-    color: ISLAMI_RENKLER.yaziBeyaz,
-    fontWeight: '500',
     marginBottom: 4,
   },
-  hicriMetin: {
+  tarihMetin: {
     fontSize: 14,
-    color: ISLAMI_RENKLER.altinAcik,
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-  motifContainer: {
-    marginTop: 12,
-    alignItems: 'center',
-  },
-  motifText: {
-    fontSize: 24,
-    letterSpacing: 8,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    fontWeight: '500',
   },
 });
-

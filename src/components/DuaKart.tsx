@@ -63,17 +63,18 @@ export const DuaKart: React.FC<DuaKartProps> = ({ dua, onFavoriToggle }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: ISLAMI_RENKLER.glassBackground,
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: ISLAMI_RENKLER.glassBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -85,10 +86,11 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   baslik: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '800',
     color: ISLAMI_RENKLER.yaziBeyaz,
     flex: 1,
+    letterSpacing: 0.5,
   },
   favoriIcon: {
     fontSize: 24,
@@ -97,10 +99,12 @@ const styles = StyleSheet.create({
     maxHeight: 300,
   },
   arapcaContainer: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
+    marginBottom: 18,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   arapca: {
     fontSize: 18,

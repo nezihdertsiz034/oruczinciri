@@ -39,10 +39,15 @@ export const ISLAMI_RENKLER = {
   arkaPlanOrta: '#F1F8E9',   // Orta krem-yeşilimsi
   arkaPlanKoyu: '#E8F5E9',   // Koyu krem-yeşilimsi
   
-  // Modern yeşil arka plan (ana tema)
-  arkaPlanYesil: '#1B5E20',  // Koyu yeşil arka plan
-  arkaPlanYesilOrta: '#2E7D32', // Orta yeşil arka plan
-  arkaPlanYesilAcik: '#388E3C', // Açık yeşil arka plan
+  // Modern yeşil arka plan (ana tema) - Güncellenmiş modern tonlar
+  arkaPlanYesil: '#0F4C3A',  // Daha koyu, modern yeşil arka plan
+  arkaPlanYesilOrta: '#1A5F3F', // Orta yeşil arka plan (glassmorphism için)
+  arkaPlanYesilAcik: '#2D7A5F', // Açık yeşil arka plan
+  
+  // Glassmorphism efektleri için
+  glassBackground: 'rgba(255, 255, 255, 0.1)',
+  glassBorder: 'rgba(255, 255, 255, 0.2)',
+  glassShadow: 'rgba(0, 0, 0, 0.1)',
   
   // Beyaz yazı renkleri
   yaziBeyaz: '#FFFFFF',      // Saf beyaz

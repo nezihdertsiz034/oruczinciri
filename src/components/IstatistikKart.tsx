@@ -30,18 +30,19 @@ export const IstatistikKart: React.FC<IstatistikKartProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: ISLAMI_RENKLER.glassBackground,
+    borderRadius: 24,
+    padding: 24,
     alignItems: 'center',
-    minWidth: 140,
+    minWidth: 150,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: ISLAMI_RENKLER.glassBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: 'hidden',
   },
   ikon: {
     fontSize: 32,
@@ -54,10 +55,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   deger: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '800',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
   altBaslik: {
     fontSize: 12,

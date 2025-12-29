@@ -24,11 +24,18 @@ export default function AppNavigator() {
         screenOptions={{
           headerStyle: {
             backgroundColor: ISLAMI_RENKLER.arkaPlanYesil,
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
           },
           headerTintColor: ISLAMI_RENKLER.yaziBeyaz,
           headerTitleStyle: {
-            fontWeight: 'bold',
+            fontWeight: '800',
+            fontSize: 20,
+            letterSpacing: 0.5,
           },
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
         }}
       >
         <Stack.Screen 
