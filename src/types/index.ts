@@ -49,6 +49,7 @@ export interface BildirimAyarlari {
   gunlukHatirlaticiSaat: string;
   suIcmeHatirlaticiAktif: boolean;
   suIcmeAraligi: number; // Dakika cinsinden (örn: 30 = her 30 dakikada bir)
+  ezanSesiAktif: boolean; // Ezan sesi çalınsın mı
 }
 
 // Dua

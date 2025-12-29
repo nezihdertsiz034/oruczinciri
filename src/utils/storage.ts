@@ -196,6 +196,7 @@ export async function yukleBildirimAyarlari(): Promise<BildirimAyarlari> {
       gunlukHatirlaticiSaat: '20:00',
       suIcmeHatirlaticiAktif: false,
       suIcmeAraligi: 30, // Her 30 dakikada bir
+      ezanSesiAktif: true, // Varsayılan olarak açık
     };
   } catch (error) {
     console.error('Bildirim ayarları yüklenirken hata:', error);
@@ -209,6 +210,7 @@ export async function yukleBildirimAyarlari(): Promise<BildirimAyarlari> {
       gunlukHatirlaticiSaat: '20:00',
       suIcmeHatirlaticiAktif: false,
       suIcmeAraligi: 30, // Her 30 dakikada bir
+      ezanSesiAktif: true, // Varsayılan olarak açık
     };
   }
 }

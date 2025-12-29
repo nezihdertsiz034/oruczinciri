@@ -225,6 +225,29 @@ export default function AyarlarScreen() {
             />
           </View>
 
+          {bildirimAyarlari.namazVakitleriAktif && (
+            <View style={styles.switchItem}>
+              <View>
+                <Text style={styles.switchLabel}>Ezan Sesi</Text>
+                <Text style={styles.switchAltLabel}>
+                  Namaz vakitlerinde ezan sesi çal
+                </Text>
+              </View>
+              <Switch
+                value={bildirimAyarlari.ezanSesiAktif ?? true}
+                onValueChange={async (value) => {
+                  await handleBildirimAyarDegistir('ezanSesiAktif', value);
+                  await bildirimleriAyarla();
+                }}
+                trackColor={{
+                  false: 'rgba(255, 255, 255, 0.3)',
+                  true: ISLAMI_RENKLER.altinOrta,
+                }}
+                thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+              />
+            </View>
+          )}
+
           <View style={styles.switchItem}>
             <View>
               <Text style={styles.switchLabel}>Günlük Oruç Hatırlatıcısı</Text>
@@ -258,10 +281,12 @@ export default function AyarlarScreen() {
         <View style={styles.ayarBolumu}>
           <Text style={styles.ayarBaslik}>ℹ️ Hakkında</Text>
           <Text style={styles.hakkindaText}>
-            Oruç Zinciri - 2026 Ramazan{'\n'}
-            Versiyon: 1.0.0{'\n\n'}
-            Bu uygulama, Ramazan ayında oruç tutmanızı takip etmenize ve
-            motivasyonunuzu artırmanıza yardımcı olmak için tasarlanmıştır.
+            Oruç Zinciri - Ramazan Rehberi{'\n'}
+            Versiyon: 1.0.0{'\n'}
+            2026 Ramazan Ayı{'\n\n'}
+            Bu uygulama, Ramazan ayında oruç tutmanızı takip etmenize,
+            namaz vakitlerini öğrenmenize ve dini içeriklerle manevi yolculuğunuzu
+            zenginleştirmenize yardımcı olmak için tasarlanmıştır.
           </Text>
         </View>
       </ScrollView>

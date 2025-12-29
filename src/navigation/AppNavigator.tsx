@@ -42,7 +42,7 @@ export default function AppNavigator() {
           name="Ana Sayfa" 
           component={HomeScreen}
           options={{ 
-            title: '📿 Oruç Zinciri',
+            title: '📿 Oruç Zinciri - Ramazan Rehberi',
           }}
         />
         <Stack.Screen 

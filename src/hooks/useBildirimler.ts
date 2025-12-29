@@ -4,6 +4,7 @@ import { yukleBildirimAyarlari, yukleSehir } from '../utils/storage';
 import { getNamazVakitleri } from '../utils/namazVakitleri';
 import { getSahurVakitleri2026, sahurSaatiGectiMi } from '../utils/sahurVakitleri';
 import { getRamazan2026Tarihleri } from '../utils/ramazanTarihleri';
+import { bildirimEzanSesiBaslat, bildirimEzanSesiTemizle } from '../utils/ezanSesi';
 
 // Bildirim handler
 Notifications.setNotificationHandler({
@@ -137,7 +138,7 @@ export function useBildirimler() {
 
       // Namaz vakitleri bildirimleri
       if (ayarlar.namazVakitleriAktif && vakitler) {
-        // Her namaz vakti için bildirim (basitleştirilmiş - sadece bugün)
+        // Her namaz vakti için bildirim - 30 günlük
         const namazVakitleri = [
           { isim: 'Sabah', saat: vakitler.imsak },
           { isim: 'Öğle', saat: vakitler.ogle },
@@ -146,22 +147,35 @@ export function useBildirimler() {
           { isim: 'Yatsı', saat: vakitler.yatsi },
         ];
 
-        for (const vakit of namazVakitleri) {
-          const [saat, dakika] = vakit.saat.split(':').map(Number);
-          const vakitTarih = new Date(yarin);
-          vakitTarih.setHours(saat, dakika, 0, 0);
+        // Her gün için 30 günlük bildirim
+        for (let gun = 0; gun < 30; gun++) {
+          for (const vakit of namazVakitleri) {
+            const [saat, dakika] = vakit.saat.split(':').map(Number);
+            const vakitTarih = new Date(yarin);
+            vakitTarih.setDate(vakitTarih.getDate() + gun);
+            vakitTarih.setHours(saat, dakika, 0, 0);
 
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: `🕌 ${vakit.isim} Namazı`,
-              body: `${vakit.isim} namazı vakti geldi.`,
-              sound: true,
-            },
-            trigger: {
-              type: Notifications.SchedulableTriggerInputTypes.DATE,
-              date: vakitTarih,
-            },
-          });
+            // Eğer tarih geçmişse atla
+            if (vakitTarih < bugun) {
+              continue;
+            }
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: `🕌 ${vakit.isim} Namazı`,
+                body: `${vakit.isim} namazı vakti geldi.`,
+                sound: true, // Bildirim sesi
+                data: {
+                  vakit: vakit.isim,
+                  ezanSesi: ayarlar.ezanSesiAktif ?? true,
+                },
+              },
+              trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+                date: vakitTarih,
+              },
+            });
+          }
         }
       }
 
@@ -248,12 +262,16 @@ export function useBildirimler() {
     fetch('http://127.0.0.1:7242/ingest/cc9fe6a4-66fd-4da1-9ddb-eb4d27168ce9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useBildirimler.ts:158',message:'useEffect çalıştı - bildirimleriAyarla dependency arrayde',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
     // #endregion
     bildirimleriAyarla();
+    
+    // Ezan sesi listener'ını başlat
+    bildirimEzanSesiBaslat();
 
     return () => {
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/cc9fe6a4-66fd-4da1-9ddb-eb4d27168ce9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useBildirimler.ts:162',message:'useEffect cleanup çalıştı',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
       // #endregion
       // Cleanup - component unmount olduğunda
+      bildirimEzanSesiTemizle();
     };
   }, [bildirimleriAyarla]);
 
