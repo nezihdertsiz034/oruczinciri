@@ -27,6 +27,7 @@ import SuHatirlaticiScreen from '../screens/ekstra/SuHatirlaticiScreen';
 import IftarMenuOnerileriScreen from '../screens/ekstra/IftarMenuOnerileriScreen';
 import WidgetScreen from '../screens/WidgetScreen';
 import AyarlarScreen from '../screens/AyarlarScreen';
+import PeygamberHayatiScreen from '../screens/PeygamberHayatiScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BackgroundDecor } from '../components/BackgroundDecor';
 
@@ -196,6 +197,11 @@ export default function AppNavigator() {
             component={AyarlarScreen}
             options={{ title: '⚙️ Ayarlar' }}
           />
+          <Drawer.Screen
+            name="Peygamber Hayatı"
+            component={PeygamberHayatiScreen}
+            options={{ title: '☪️ Hz. Muhammed (S.A.V.)' }}
+          />
         </Drawer.Navigator>
       )}
     </NavigationContainer>
@@ -218,6 +224,7 @@ const DRAWER_ITEMS = [
   { name: 'Su Hatırlatıcı', etiket: 'Su Hatırlatıcı', ikon: '💧' },
   { name: 'İftar Menü Önerileri', etiket: 'İftar Menü Önerileri', ikon: '💡' },
   { name: 'Ana Ekran Widget', etiket: 'Ana Ekran Widget', ikon: '🧩' },
+  { name: 'Peygamber Hayatı', etiket: 'Hz. Muhammed (S.A.V.)', ikon: '☪️' },
   { name: 'Ayarlar', etiket: 'Ayarlar', ikon: '⚙️' },
 ] as const;
 
