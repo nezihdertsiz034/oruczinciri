@@ -33,18 +33,18 @@ const HADISLER = [
 
 // Hızlı erişim kartları - Satır 1 (4 adet)
 const HIZLI_ERISIM_1 = [
-  { id: 'tesbih', baslik: 'Tesbih', ikon: '📿', tab: 'Takip', renk: '#FFD700' },
-  { id: 'dualar', baslik: 'Dualar', ikon: '🤲', tab: 'İbadet', renk: '#90EE90' },
-  { id: 'kible', baslik: 'Kıble', ikon: '🧭', tab: 'Araçlar', renk: '#87CEEB' },
-  { id: 'esma', baslik: 'Esmaül Hüsna', ikon: '☪️', tab: 'İbadet', renk: '#DDA0DD' },
+  { id: 'tesbih', baslik: 'Tesbih', ikon: '📿', tab: 'Takip', screen: 'TesbihSayaci', renk: '#FFD700' },
+  { id: 'dualar', baslik: 'Dualar', ikon: '🤲', tab: 'İbadet', screen: 'DualarMain', renk: '#90EE90' },
+  { id: 'kible', baslik: 'Kıble', ikon: '🧭', tab: 'Araçlar', screen: 'Kıble', renk: '#87CEEB' },
+  { id: 'esma', baslik: 'Esmaül Hüsna', ikon: '☪️', tab: 'İbadet', screen: 'EsmaulHusna', renk: '#DDA0DD' },
 ];
 
 // Hızlı erişim kartları - Satır 2 (4 adet) 
 const HIZLI_ERISIM_2 = [
-  { id: 'peygamber', baslik: 'Hz. Muhammed', ikon: '🌙', tab: 'İbadet', renk: '#98FB98' },
-  { id: 'kuran', baslik: 'Kur\'an', ikon: '📖', tab: 'İbadet', renk: '#FFB6C1' },
-  { id: 'zekat', baslik: 'Zekat', ikon: '💰', tab: 'Araçlar', renk: '#F0E68C' },
-  { id: 'istatistik', baslik: 'İstatistikler', ikon: '📊', tab: 'Takip', renk: '#B0C4DE' },
+  { id: 'peygamber', baslik: 'Hz. Muhammed', ikon: '🌙', tab: 'İbadet', screen: 'PeygamberHayati', renk: '#98FB98' },
+  { id: 'kuran', baslik: 'Kur\'an', ikon: '📖', tab: 'İbadet', screen: 'KuranAyetleri', renk: '#FFB6C1' },
+  { id: 'zekat', baslik: 'Zekat', ikon: '💰', tab: 'Araçlar', screen: 'Zekat', renk: '#F0E68C' },
+  { id: 'istatistik', baslik: 'İstatistikler', ikon: '📊', tab: 'Takip', screen: 'IstatistiklerMain', renk: '#B0C4DE' },
 ];
 
 export default function HomeScreen() {
@@ -57,9 +57,16 @@ export default function HomeScreen() {
   const gununAyeti = GUNUN_AYETLERI[gunIndex];
   const gununHadisi = HADISLER[hadisIndex];
 
-  const handleHizliErisim = (tab: string) => {
-    // Sadece tab'a git
-    navigation.navigate(tab);
+  const handleHizliErisim = (tab: string, screen?: string) => {
+    if (screen) {
+      // Önce tab'a, sonra içindeki stack'in ilgili ekranına git
+      navigation.navigate(tab, {
+        screen: screen,
+      });
+    } else {
+      // Sadece tab'a git
+      navigation.navigate(tab);
+    }
   };
 
   return (
@@ -84,7 +91,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 key={item.id}
                 style={styles.hizliKart}
-                onPress={() => handleHizliErisim(item.tab)}
+                onPress={() => handleHizliErisim(item.tab, item.screen)}
                 activeOpacity={0.8}
               >
                 <View style={[styles.hizliIkon, { backgroundColor: `${item.renk}25` }]}>
@@ -100,7 +107,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 key={item.id}
                 style={styles.hizliKart}
-                onPress={() => handleHizliErisim(item.tab)}
+                onPress={() => handleHizliErisim(item.tab, item.screen)}
                 activeOpacity={0.8}
               >
                 <View style={[styles.hizliIkon, { backgroundColor: `${item.renk}25` }]}>

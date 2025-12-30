@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 
@@ -180,11 +181,19 @@ function DahaFazlaStack() {
 
 // Ana Tab Navigator
 export default function TabNavigator() {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
-                tabBarStyle: styles.tabBar,
+                tabBarStyle: [
+                    styles.tabBar,
+                    {
+                        height: Platform.OS === 'ios' ? 88 : 65 + insets.bottom,
+                        paddingBottom: Platform.OS === 'ios' ? 28 : insets.bottom + 8,
+                    }
+                ],
                 tabBarActiveTintColor: ISLAMI_RENKLER.altinAcik,
                 tabBarInactiveTintColor: ISLAMI_RENKLER.yaziBeyazYumusak,
                 tabBarLabelStyle: styles.tabLabel,
@@ -236,9 +245,7 @@ const styles = StyleSheet.create({
         backgroundColor: ISLAMI_RENKLER.arkaPlanYesil,
         borderTopWidth: 1,
         borderTopColor: 'rgba(218, 165, 32, 0.2)',
-        height: Platform.OS === 'ios' ? 88 : 70,
         paddingTop: 8,
-        paddingBottom: Platform.OS === 'ios' ? 28 : 10,
         elevation: 0,
         shadowOpacity: 0,
     },
