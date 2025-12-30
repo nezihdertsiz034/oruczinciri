@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+# Oruç Zinciri Uygulaması - Cursor Kuralları
+
+## Genel Kurallar
+- Tüm kod yorumları ve dokümantasyon Türkçe olmalıdır
+- Clean code prensiplerine uyulmalı, kod tekrarından kaçınılmalıdır
+- Linter hataları mutlaka çözülmelidir
+- MCP araçları kullanılmaktan çekinilmemelidir
+
+## Teknoloji Stack
+- React Native (Expo)
+- TypeScript
+- React Navigation
+- AsyncStorage (yerel veri saklama)
+
+## Kod Standartları
+- TypeScript strict mode kullanılmalıdır
+- Fonksiyonlar ve bileşenler tek sorumluluk prensibine uygun olmalıdır
+- Component isimleri PascalCase, fonksiyon isimleri camelCase olmalıdır
+- Her component için TypeScript interface/type tanımları yapılmalıdır
+
+## Proje Yapısı
+- `src/components/` - Yeniden kullanılabilir bileşenler
+- `src/screens/` - Ekran bileşenleri
+- `src/navigation/` - Navigasyon yapılandırması
+- `src/utils/` - Yardımcı fonksiyonlar
+- `src/types/` - TypeScript type tanımları
+- `src/hooks/` - Custom React hooks
+- `src/constants/` - Sabitler ve konfigürasyonlar
+
+## Özellikler
+- 30 günlük oruç takibi
+- Günlük işaretleme sistemi
+- Zincir görselleştirmesi
+- Yerel veri saklama (AsyncStorage)
+- Yerel saat gösterimi (gerçek zamanlı)
+- Oruç sayacı (sabah ezanı - akşam namazı arası süreç)
+- Namaz vakitleri API entegrasyonu
+- Basit ve kullanıcı dostu arayüz
+
+## Notlar
+- Uygulama çok kapsamlı değil, basit ve odaklı kalmalıdır
+- Performans optimizasyonlarına dikkat edilmelidir
+- Kullanıcı deneyimi ön planda tutulmalıdır
+

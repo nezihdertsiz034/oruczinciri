@@ -57,3 +57,4 @@ Eğer CollectAPI key ayarlanmamışsa veya API başarısız olursa, uygulama oto
 - API key'i `.gitignore`'a ekleyin (eğer ayrı dosya kullanıyorsanız)
 
 
+

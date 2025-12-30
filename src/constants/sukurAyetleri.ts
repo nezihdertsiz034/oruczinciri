@@ -234,3 +234,4 @@ export function getSukurAyetiByGun(gunNumarasi: number): SukurAyeti {
 
 
 
+
