@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir } from '../types';
+import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir, TesbihSayaciVeri } from '../types';
 import { tarihToString } from './ramazanTarihleri';
 
 // Storage key'leri
@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   NOTLAR: '@notlar',
   SADAKA: '@sadaka',
   TERAVIH: '@teravih',
+  TESBIH_SAYACI: '@tesbih_sayaci',
   BILDIRIM_AYARLARI: '@bildirim_ayarlari',
   SEHIR: '@sehir',
 } as const;
@@ -227,6 +228,66 @@ export async function kaydetBildirimAyarlari(ayarlar: BildirimAyarlari): Promise
   }
 }
 
+// ========== TESBIH SAYACI ==========
+
+/**
+ * Tesbih sayacı verilerini yükler
+ */
+export async function yukleTesbihSayaci(): Promise<TesbihSayaciVeri> {
+  const varsayilan: TesbihSayaciVeri = {
+    sayac: 0,
+    hedef: 33,
+    guncellemeTarihi: Date.now(),
+  };
+
+  try {
+    const veri = await AsyncStorage.getItem(STORAGE_KEYS.TESBIH_SAYACI);
+    if (veri) {
+      const parsed = JSON.parse(veri) as Partial<TesbihSayaciVeri>;
+      return {
+        sayac: parsed.sayac ?? varsayilan.sayac,
+        hedef: parsed.hedef ?? varsayilan.hedef,
+        guncellemeTarihi: parsed.guncellemeTarihi ?? varsayilan.guncellemeTarihi,
+      };
+    }
+    return varsayilan;
+  } catch (error) {
+    console.error('Tesbih sayacı yüklenirken hata:', error);
+    return varsayilan;
+  }
+}
+
+/**
+ * Tesbih sayacı verilerini kaydeder
+ */
+export async function kaydetTesbihSayaci(veri: TesbihSayaciVeri): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.TESBIH_SAYACI, JSON.stringify(veri));
+  } catch (error) {
+    console.error('Tesbih sayacı kaydedilirken hata:', error);
+    throw error;
+  }
+}
+
+/**
+ * Tesbih sayacını sıfırlar
+ */
+export async function sifirlaTesbihSayaci(): Promise<TesbihSayaciVeri> {
+  const sifirlanmis: TesbihSayaciVeri = {
+    sayac: 0,
+    hedef: 33,
+    guncellemeTarihi: Date.now(),
+  };
+
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.TESBIH_SAYACI, JSON.stringify(sifirlanmis));
+  } catch (error) {
+    console.error('Tesbih sayacı sıfırlanırken hata:', error);
+  }
+
+  return sifirlanmis;
+}
+
 // ========== SEHIR ==========
 
 /**
@@ -329,5 +390,4 @@ export async function getirIstatistikler(): Promise<{
     };
   }
 }
-
 

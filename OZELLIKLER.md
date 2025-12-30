@@ -73,6 +73,18 @@
 
 ---
 
+## 📿 Tesbih Sayacı Ekranı
+
+### Özellikler:
+- **Tek dokunuşla artırma**
+- **Geri alma ve sıfırlama**
+- **Hızlı hedefler** (33, 99, 100)
+- **Özel hedef girişi**
+- **Kalan sayı ve ilerleme takibi**
+- **Otomatik kayıt**
+
+---
+
 ## 📖 Kur'an Ayetleri Ekranı
 
 ### Özellikler:
@@ -138,6 +150,10 @@
 - **Toplam kalori hesaplama**
 - **Günlük kalori takibi**
 
+### 8. 💡 İftar Menüsü Önerileri
+- **Çeşitli kategori önerileri** (iftariye, çorba, ana yemek, tatlı)
+- **Yenile butonu** ile farklı seçenekler
+
 ---
 
 ## ⚙️ Ayarlar Ekranı
@@ -183,6 +199,16 @@
 ### 4. ℹ️ Hakkında
 - **Uygulama bilgileri**
 - **Versiyon bilgisi**
+
+---
+
+## 🧩 Ana Ekran Widget
+
+### Özellikler:
+- **Widget önizleme kartı**
+- **İmsak ve iftar saatleri**
+- **Kalan süre göstergesi**
+- **iOS/Android ekleme adımları**
 
 ---
 
@@ -295,6 +321,5 @@ Herhangi bir sorun veya öneri için lütfen iletişime geçin.
 
 **Versiyon:** 1.0.0
 **Son Güncelleme:** 2026
-
 
 

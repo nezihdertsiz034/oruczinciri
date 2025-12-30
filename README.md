@@ -27,6 +27,13 @@
 - Arapça metin + Türkçe okunuş + Anlam
 - Favori ekleme
 
+### 📿 Tesbih Sayacı
+- Tek dokunuşla artırma
+- Geri alma ve sıfırlama
+- Hızlı hedefler (33, 99, 100)
+- Özel hedef belirleme
+- Kalan sayı ve ilerleme takibi
+
 ### 📖 Kur'an Ayetleri
 - Günlük ayet gösterimi
 - 30 günlük ayet koleksiyonu
@@ -46,6 +53,12 @@
 - **💰 Zekat Hesaplayıcı** - Mal varlığına göre zekat hesaplama
 - **🌾 Fitre Hesaplayıcı** - Kişi sayısına göre fitre hesaplama
 - **🍽️ İftar Kalori Takibi** - İftar menüsü kalori takibi
+- **💡 İftar Menüsü Önerileri** - Kategori bazlı, yenilenebilir öneriler
+
+### 🧩 Ana Ekran Widget
+- Widget önizleme kartı
+- İmsak/iftar saatleri ve kalan süre
+- iOS/Android ekleme adımları
 
 ### ⚙️ Ayarlar
 - **📍 Şehir Seçimi** - 81 il, otomatik vakit güncelleme
@@ -116,9 +129,11 @@ oruc/
 │   │   ├── HomeScreen.tsx
 │   │   ├── IstatistiklerScreen.tsx
 │   │   ├── DualarScreen.tsx
+│   │   ├── TesbihScreen.tsx
 │   │   ├── KuranAyetleriScreen.tsx
 │   │   ├── NotlarScreen.tsx
 │   │   ├── EkstraScreen.tsx
+│   │   ├── WidgetScreen.tsx
 │   │   └── AyarlarScreen.tsx
 │   ├── hooks/             # Custom Hooks
 │   │   ├── useNamazVakitleri.ts

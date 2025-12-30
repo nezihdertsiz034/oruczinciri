@@ -8,9 +8,11 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import HomeScreen from '../screens/HomeScreen';
 import IstatistiklerScreen from '../screens/IstatistiklerScreen';
 import DualarScreen from '../screens/DualarScreen';
+import TesbihScreen from '../screens/TesbihScreen';
 import KuranAyetleriScreen from '../screens/KuranAyetleriScreen';
 import NotlarScreen from '../screens/NotlarScreen';
 import EkstraScreen from '../screens/EkstraScreen';
+import WidgetScreen from '../screens/WidgetScreen';
 import AyarlarScreen from '../screens/AyarlarScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -98,6 +100,11 @@ export default function AppNavigator() {
           options={{ title: '🤲 Dualar' }}
         />
         <Stack.Screen 
+          name="Tesbih Sayacı" 
+          component={TesbihScreen}
+          options={{ title: '📿 Tesbih Sayacı' }}
+        />
+        <Stack.Screen 
           name="Kur'an Ayetleri" 
           component={KuranAyetleriScreen}
           options={{ title: '📖 Kur\'an Ayetleri' }}
@@ -111,6 +118,11 @@ export default function AppNavigator() {
           name="Ekstra Özellikler" 
           component={EkstraScreen}
           options={{ title: '✨ Ekstra Özellikler' }}
+        />
+        <Stack.Screen 
+          name="Ana Ekran Widget" 
+          component={WidgetScreen}
+          options={{ title: '🧩 Ana Ekran Widget' }}
         />
           <Stack.Screen 
             name="Ayarlar" 

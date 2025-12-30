@@ -15,9 +15,11 @@ type RootStackParamList = {
   'Ana Sayfa': undefined;
   'İstatistikler': undefined;
   'Dualar': undefined;
+  'Tesbih Sayacı': undefined;
   'Kur\'an Ayetleri': undefined;
   'Notlar': undefined;
   'Ekstra Özellikler': undefined;
+  'Ana Ekran Widget': undefined;
   'Ayarlar': undefined;
 };
 
@@ -60,6 +62,14 @@ export default function HomeScreen() {
           renk: ISLAMI_RENKLER.yesilOrta,
         },
         {
+          id: 'tesbih',
+          ikon: '📿',
+          baslik: 'Tesbih Sayacı',
+          aciklama: 'Zikir sayacını hızlıca kullanın',
+          onPress: () => navigation.navigate('Tesbih Sayacı'),
+          renk: ISLAMI_RENKLER.altinAcik,
+        },
+        {
           id: 'kuran',
           ikon: '📖',
           baslik: 'Kur\'an Ayetleri',
@@ -89,6 +99,14 @@ export default function HomeScreen() {
           aciklama: 'Kıble, teravih, sadaka ve daha fazlası',
           onPress: () => navigation.navigate('Ekstra Özellikler'),
           renk: ISLAMI_RENKLER.altinAcik,
+        },
+        {
+          id: 'widget',
+          ikon: '🧩',
+          baslik: 'Ana Ekran Widget',
+          aciklama: 'Widget önizleme ve kurulum bilgisi',
+          onPress: () => navigation.navigate('Ana Ekran Widget'),
+          renk: ISLAMI_RENKLER.yesilParlak,
         },
         {
           id: 'ayarlar',
