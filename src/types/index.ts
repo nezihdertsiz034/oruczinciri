@@ -108,6 +108,14 @@ export interface TesbihSayaciVeri {
   guncellemeTarihi: number; // timestamp
 }
 
+// Tesbih kaydı (geçmiş)
+export interface TesbihKaydi {
+  id: string;
+  zikirAdi: string; // Subhanallah, Elhamdulillah, Allahuekber, vs.
+  adet: number;
+  tarih: number; // timestamp
+}
+
 // Kıble yönü
 export interface KibleYonu {
   aci: number; // 0-360 derece

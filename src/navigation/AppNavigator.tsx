@@ -202,48 +202,23 @@ export default function AppNavigator() {
   );
 }
 
-const DRAWER_SECTIONS = [
-  {
-    baslik: 'Ana Ekran',
-    items: [
-      { name: 'Ana Sayfa', etiket: 'Ana Sayfa', ikon: '🏠' },
-    ],
-  },
-  {
-    baslik: 'Takip',
-    items: [
-      { name: 'İstatistikler', etiket: 'İstatistikler', ikon: '📊' },
-      { name: 'Tesbih Sayacı', etiket: 'Tesbih Sayacı', ikon: '📿' },
-    ],
-  },
-  {
-    baslik: 'Dini İçerikler',
-    items: [
-      { name: 'Dualar', etiket: 'Dualar', ikon: '🤲' },
-      { name: 'Kur\'an Ayetleri', etiket: 'Kur\'an Ayetleri', ikon: '📖' },
-    ],
-  },
-  {
-    baslik: 'Ekstra',
-    items: [
-      { name: 'Notlar', etiket: 'Notlar', ikon: '📝' },
-      { name: 'Zekat', etiket: 'Zekat', ikon: '💰' },
-      { name: 'Fitre', etiket: 'Fitre', ikon: '🌾' },
-      { name: 'İftar Kalori', etiket: 'İftar Kalori', ikon: '🍽️' },
-      { name: 'Kıble', etiket: 'Kıble', ikon: '🧭' },
-      { name: 'Teravih', etiket: 'Teravih', ikon: '🕌' },
-      { name: 'Sadaka', etiket: 'Sadaka', ikon: '💝' },
-      { name: 'Su Hatırlatıcı', etiket: 'Su Hatırlatıcı', ikon: '💧' },
-      { name: 'İftar Menü Önerileri', etiket: 'İftar Menü Önerileri', ikon: '💡' },
-      { name: 'Ana Ekran Widget', etiket: 'Ana Ekran Widget', ikon: '🧩' },
-    ],
-  },
-  {
-    baslik: 'Ayarlar',
-    items: [
-      { name: 'Ayarlar', etiket: 'Ayarlar', ikon: '⚙️' },
-    ],
-  },
+const DRAWER_ITEMS = [
+  { name: 'Ana Sayfa', etiket: 'Ana Sayfa', ikon: '🏠' },
+  { name: 'İstatistikler', etiket: 'İstatistikler', ikon: '📊' },
+  { name: 'Tesbih Sayacı', etiket: 'Tesbih Sayacı', ikon: '📿' },
+  { name: 'Dualar', etiket: 'Dualar', ikon: '🤲' },
+  { name: 'Kur\'an Ayetleri', etiket: 'Kur\'an Ayetleri', ikon: '📖' },
+  { name: 'Notlar', etiket: 'Notlar', ikon: '📝' },
+  { name: 'Zekat', etiket: 'Zekat', ikon: '💰' },
+  { name: 'Fitre', etiket: 'Fitre', ikon: '🌾' },
+  { name: 'İftar Kalori', etiket: 'İftar Kalori', ikon: '🍽️' },
+  { name: 'Kıble', etiket: 'Kıble', ikon: '🧭' },
+  { name: 'Teravih', etiket: 'Teravih', ikon: '🕌' },
+  { name: 'Sadaka', etiket: 'Sadaka', ikon: '💝' },
+  { name: 'Su Hatırlatıcı', etiket: 'Su Hatırlatıcı', ikon: '💧' },
+  { name: 'İftar Menü Önerileri', etiket: 'İftar Menü Önerileri', ikon: '💡' },
+  { name: 'Ana Ekran Widget', etiket: 'Ana Ekran Widget', ikon: '🧩' },
+  { name: 'Ayarlar', etiket: 'Ayarlar', ikon: '⚙️' },
 ] as const;
 
 const AppDrawerContent = (props: DrawerContentComponentProps) => {
@@ -289,46 +264,40 @@ const AppDrawerContent = (props: DrawerContentComponentProps) => {
           <View style={styles.dividerLine} />
         </View>
 
-        {DRAWER_SECTIONS.map((bolum, bolumIndex) => (
-          <View key={bolum.baslik} style={styles.drawerSection}>
-            <View style={styles.sectionTitleContainer}>
-              <View style={styles.sectionTitleLine} />
-              <Text style={styles.drawerSectionTitle}>{bolum.baslik}</Text>
-              <View style={styles.sectionTitleLine} />
-            </View>
-            {bolum.items.map((item, itemIndex) => {
-              const aktif = aktifRoute === item.name;
-              return (
-                <TouchableOpacity
-                  key={item.name}
-                  style={[
-                    styles.drawerItem,
-                    aktif && styles.drawerItemActive,
-                  ]}
-                  onPress={() => props.navigation.navigate(item.name)}
-                  activeOpacity={0.7}
-                >
-                  {/* Aktif gösterge çizgisi */}
-                  {aktif && <View style={styles.activeIndicator} />}
+        {/* Menü Öğeleri */}
+        <View style={styles.menuItemsContainer}>
+          {DRAWER_ITEMS.map((item) => {
+            const aktif = aktifRoute === item.name;
+            return (
+              <TouchableOpacity
+                key={item.name}
+                style={[
+                  styles.drawerItem,
+                  aktif && styles.drawerItemActive,
+                ]}
+                onPress={() => props.navigation.navigate(item.name)}
+                activeOpacity={0.7}
+              >
+                {/* Aktif gösterge çizgisi */}
+                {aktif && <View style={styles.activeIndicator} />}
 
-                  <View style={[styles.iconContainer, aktif && styles.iconContainerActive]}>
-                    <Text style={styles.drawerItemIcon}>{item.ikon}</Text>
+                <View style={[styles.iconContainer, aktif && styles.iconContainerActive]}>
+                  <Text style={styles.drawerItemIcon}>{item.ikon}</Text>
+                </View>
+
+                <Text style={[styles.drawerItemText, aktif && styles.drawerItemTextActive]}>
+                  {item.etiket}
+                </Text>
+
+                {aktif && (
+                  <View style={styles.activeArrow}>
+                    <Text style={styles.arrowText}>›</Text>
                   </View>
-
-                  <Text style={[styles.drawerItemText, aktif && styles.drawerItemTextActive]}>
-                    {item.etiket}
-                  </Text>
-
-                  {aktif && (
-                    <View style={styles.activeArrow}>
-                      <Text style={styles.arrowText}>›</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ))}
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Alt boşluk */}
         <View style={styles.bottomSpacer} />
@@ -479,29 +448,8 @@ const styles = StyleSheet.create({
     color: ISLAMI_RENKLER.altinOrta,
     marginHorizontal: 12,
   },
-  drawerSection: {
+  menuItemsContainer: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
-  sectionTitleLine: {
-    width: 8,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginHorizontal: 8,
-  },
-  drawerSectionTitle: {
-    fontSize: 11,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: ISLAMI_RENKLER.altinOrta,
-    fontFamily: TYPOGRAPHY.body,
-    fontWeight: '600',
   },
   drawerItem: {
     flexDirection: 'row',

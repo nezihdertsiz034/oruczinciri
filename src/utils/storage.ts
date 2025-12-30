@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir, TesbihSayaciVeri } from '../types';
+import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir, TesbihSayaciVeri, TesbihKaydi } from '../types';
 import { tarihToString } from './ramazanTarihleri';
 
 // Storage key'leri
@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   SADAKA: '@sadaka',
   TERAVIH: '@teravih',
   TESBIH_SAYACI: '@tesbih_sayaci',
+  TESBIH_KAYITLARI: '@tesbih_kayitlari',
   BILDIRIM_AYARLARI: '@bildirim_ayarlari',
   SEHIR: '@sehir',
 } as const;
@@ -37,13 +38,13 @@ export async function kaydetNot(not: Not): Promise<void> {
   try {
     const mevcutNotlar = await yukleNotlar();
     const index = mevcutNotlar.findIndex(n => n.id === not.id);
-    
+
     if (index >= 0) {
       mevcutNotlar[index] = not;
     } else {
       mevcutNotlar.push(not);
     }
-    
+
     await AsyncStorage.setItem(STORAGE_KEYS.NOTLAR, JSON.stringify(mevcutNotlar));
   } catch (error) {
     console.error('Not kaydedilirken hata:', error);
@@ -148,13 +149,13 @@ export async function kaydetTeravih(teravih: Teravih): Promise<void> {
   try {
     const mevcutTeravihler = await yukleTeravihler();
     const index = mevcutTeravihler.findIndex(t => t.id === teravih.id);
-    
+
     if (index >= 0) {
       mevcutTeravihler[index] = teravih;
     } else {
       mevcutTeravihler.push(teravih);
     }
-    
+
     await AsyncStorage.setItem(STORAGE_KEYS.TERAVIH, JSON.stringify(mevcutTeravihler));
   } catch (error) {
     console.error('Teravih kaydedilirken hata:', error);
@@ -288,6 +289,68 @@ export async function sifirlaTesbihSayaci(): Promise<TesbihSayaciVeri> {
   return sifirlanmis;
 }
 
+// ========== TESBIH KAYITLARI ==========
+
+/**
+ * Tüm tesbih kayıtlarını yükler
+ */
+export async function yukleTesbihKayitlari(): Promise<TesbihKaydi[]> {
+  try {
+    const veri = await AsyncStorage.getItem(STORAGE_KEYS.TESBIH_KAYITLARI);
+    if (veri) {
+      return JSON.parse(veri);
+    }
+    return [];
+  } catch (error) {
+    console.error('Tesbih kayıtları yüklenirken hata:', error);
+    return [];
+  }
+}
+
+/**
+ * Yeni tesbih kaydı ekler
+ */
+export async function kaydetTesbihKaydi(kayit: TesbihKaydi): Promise<void> {
+  try {
+    const mevcutKayitlar = await yukleTesbihKayitlari();
+    mevcutKayitlar.unshift(kayit); // En yeni kayıt başa eklensin
+
+    // Maksimum 100 kayıt tut
+    const sinirliKayitlar = mevcutKayitlar.slice(0, 100);
+
+    await AsyncStorage.setItem(STORAGE_KEYS.TESBIH_KAYITLARI, JSON.stringify(sinirliKayitlar));
+  } catch (error) {
+    console.error('Tesbih kaydı eklenirken hata:', error);
+    throw error;
+  }
+}
+
+/**
+ * Tesbih kaydını siler
+ */
+export async function silTesbihKaydi(kayitId: string): Promise<void> {
+  try {
+    const mevcutKayitlar = await yukleTesbihKayitlari();
+    const filtrelenmis = mevcutKayitlar.filter(k => k.id !== kayitId);
+    await AsyncStorage.setItem(STORAGE_KEYS.TESBIH_KAYITLARI, JSON.stringify(filtrelenmis));
+  } catch (error) {
+    console.error('Tesbih kaydı silinirken hata:', error);
+    throw error;
+  }
+}
+
+/**
+ * Tüm tesbih kayıtlarını temizler
+ */
+export async function temizleTesbihKayitlari(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.TESBIH_KAYITLARI);
+  } catch (error) {
+    console.error('Tesbih kayıtları temizlenirken hata:', error);
+    throw error;
+  }
+}
+
 // ========== SEHIR ==========
 
 /**
@@ -336,15 +399,15 @@ export async function getirIstatistikler(): Promise<{
     const orucVerileri = await yukleOrucVerileri();
     const { getRamazan2026Tarihleri } = await import('./ramazanTarihleri');
     const ramazanTarihleri = getRamazan2026Tarihleri();
-    
+
     const toplamGun = ramazanTarihleri.length;
     const toplamOruc = Object.values(orucVerileri).filter(Boolean).length;
     const yuzdelik = toplamGun > 0 ? Math.round((toplamOruc / toplamGun) * 100) : 0;
-    
+
     // Kesintisiz en uzun zinciri bul
     let kesintisizZincir = 0;
     let mevcutZincir = 0;
-    
+
     ramazanTarihleri.forEach(tarih => {
       const tarihString = tarihToString(tarih);
       if (orucVerileri[tarihString] === true) {
@@ -354,14 +417,14 @@ export async function getirIstatistikler(): Promise<{
         mevcutZincir = 0;
       }
     });
-    
+
     // Haftalık oruç sayıları (4 hafta)
     const haftalikOruc: number[] = [];
     for (let hafta = 0; hafta < 4; hafta++) {
       const haftaBaslangic = hafta * 7;
       const haftaBitis = Math.min(haftaBaslangic + 7, toplamGun);
       let haftaOruc = 0;
-      
+
       for (let i = haftaBaslangic; i < haftaBitis; i++) {
         const tarih = ramazanTarihleri[i];
         const tarihString = tarihToString(tarih);
@@ -371,7 +434,7 @@ export async function getirIstatistikler(): Promise<{
       }
       haftalikOruc.push(haftaOruc);
     }
-    
+
     return {
       toplamOruc,
       kesintisizZincir,
