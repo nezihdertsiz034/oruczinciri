@@ -1,4 +1,4 @@
-# Store Listing Bilgileri
+# Store Listing Bilgileri - Müslüman+
 
 Bu dosya Google Play Store ve App Store için gerekli bilgileri içerir.
 
@@ -6,32 +6,27 @@ Bu dosya Google Play Store ve App Store için gerekli bilgileri içerir.
 
 ### Başlık
 ```
-Oruç Zinciri - Ramazan Rehberi 2026
+Müslüman+ | Namaz, Kur'an, Oruç
 ```
 
 ### Kısa Açıklama (80 karakter)
 ```
-Ramazan ayı için oruç takibi, namaz vakitleri, Kur'an-ı Kerim ve daha fazlası
+Modern Müslüman yaşamı için her şey bir arada! Namaz, Kur'an, oruç ve daha fazlası
 ```
 
 ### Uzun Açıklama
 ```
-🌙 Oruç Zinciri - 2026 Ramazan Rehberi
+➕ Müslüman+ | Modern İslami Yaşam Asistanı
 
-Ramazan ayınızı daha bereketli geçirmek için tasarlanmış kapsamlı mobil uygulama.
+Müslüman yaşamınız için ihtiyacınız olan her şey artık cebinizde!
 
 ✨ ÖZELLİKLER:
-
-📿 ORUÇ TAKİBİ
-• 30 günlük oruç zinciri
-• Günlük oruç sayacı
-• Sahur ve iftar hatırlatıcıları
-• İlerleme takibi
 
 🕌 NAMAZ VAKİTLERİ
 • Otomatik konum tespiti
 • Günlük namaz vakitleri
-• Bildirimler
+• Akıllı bildirimler
+• Diyanet İşleri metoduna göre hesaplama
 
 📖 KUR'AN-I KERİM
 • Komple Kur'an (114 sure)
@@ -40,6 +35,12 @@ Ramazan ayınızı daha bereketli geçirmek için tasarlanmış kapsamlı mobil 
 • Bookmark ve favori ayetler
 • Ayet paylaşma
 • Offline okuma
+
+📿 ORUÇ TAKİBİ
+• 30 günlük oruç zinciri
+• Günlük oruç sayacı
+• Sahur ve iftar hatırlatıcıları
+• İlerleme takibi
 
 🤲 DİNİ İÇERİK
 • Günlük dualar
@@ -68,9 +69,9 @@ Ramazan ayınızı daha bereketli geçirmek için tasarlanmış kapsamlı mobil 
 • Modern ve kullanıcı dostu arayüz
 • Türkçe dil desteği
 
-Ramazan ayınızı Oruç Zinciri ile daha bereketli geçirin! 🌙
+Müslüman+ ile dini hayatınızı kolaylaştırın! ➕
 
-#Ramazan #Oruç #Namaz #Kuran #İslam #Dua
+#Müslüman #İslam #Namaz #Kuran #Oruç #Ramazan #Dua
 ```
 
 ### Kategori
@@ -79,7 +80,7 @@ Ramazan ayınızı Oruç Zinciri ile daha bereketli geçirin! 🌙
 
 ### Keywords
 ```
-ramazan, oruç, namaz, kuran, islam, dua, tesbih, kıble, zekat, fitre, müslüman, ramazan takvimi, sahur, iftar
+müslüman, islam, namaz, kuran, oruç, ramazan, dua, tesbih, kıble, zekat, diyanet, hadis, ibadet
 ```
 
 ### Content Rating
@@ -92,17 +93,17 @@ ramazan, oruç, namaz, kuran, islam, dua, tesbih, kıble, zekat, fitre, müslüm
 
 ### Name
 ```
-Oruç Zinciri - Ramazan 2026
+Müslüman+
 ```
 
 ### Subtitle (30 karakter)
 ```
-Oruç Takibi, Namaz, Kur'an
+Namaz, Kur'an, Oruç
 ```
 
 ### Promotional Text (170 karakter)
 ```
-2026 Ramazan ayı için kapsamlı rehber! Oruç takibi, namaz vakitleri, komple Kur'an-ı Kerim, dualar ve daha fazlası. Tamamen ücretsiz ve reklamsız!
+Modern Müslüman yaşamı için kapsamlı asistan! Namaz vakitleri, komple Kur'an-ı Kerim, oruç takibi, dualar ve daha fazlası. Ücretsiz ve reklamsız!
 ```
 
 ### Description
@@ -114,7 +115,7 @@ Oruç Takibi, Namaz, Kur'an
 
 ### Keywords (100 karakter, virgülle ayrılmış)
 ```
-ramazan,oruç,namaz,kuran,islam,dua,tesbih,kıble,zekat,müslüman,sahur,iftar
+müslüman,islam,namaz,kuran,oruç,ramazan,dua,tesbih,kıble,zekat,diyanet
 ```
 
 ---
@@ -163,10 +164,11 @@ ramazan,oruç,namaz,kuran,islam,dua,tesbih,kıble,zekat,müslüman,sahur,iftar
 **Format:** PNG veya JPG
 **İçerik:** 
 - Uygulama logosu
-- "Oruç Zinciri" başlığı
-- "Ramazan Rehberi 2026" alt başlık
+- "Müslüman+" başlığı
+- "Modern İslami Yaşam Asistanı" alt başlık
 - Hilal ve yıldız görselleri
 - Yeşil tema (#1a5f3f)
+- Artı (+) sembolü vurgusu
 
 ---
 
@@ -185,29 +187,17 @@ ramazan,oruç,namaz,kuran,islam,dua,tesbih,kıble,zekat,müslüman,sahur,iftar
 
 ## Privacy Policy URL
 
-**Geçici (GitHub):**
+**GitHub:**
 ```
-https://github.com/[username]/oruczinciri/blob/main/PRIVACY_POLICY.md
+https://github.com/[username]/musluman-plus/blob/main/PRIVACY_POLICY.md
 ```
-
-**Kalıcı (Önerilen):**
-- GitHub Pages kullan
-- Kendi website'inde yayınla
 
 ---
 
 ## Support URL
 
 ```
-https://github.com/[username]/oruczinciri
-```
-
----
-
-## Marketing URL (Opsiyonel)
-
-```
-https://github.com/[username]/oruczinciri
+https://github.com/[username]/musluman-plus
 ```
 
 ---

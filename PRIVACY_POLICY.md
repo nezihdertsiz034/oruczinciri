@@ -1,10 +1,10 @@
-# Gizlilik Politikası - Oruç Zinciri
+# Gizlilik Politikası - Müslüman+
 
 **Son Güncelleme:** 11 Ocak 2026
 
 ## Giriş
 
-Oruç Zinciri - Ramazan Rehberi uygulaması, kullanıcılarının gizliliğine saygı duyar. Bu gizlilik politikası, uygulamanın hangi verileri topladığını, nasıl kullandığını ve koruduğunu açıklar.
+Müslüman+ uygulaması, kullanıcılarının gizliliğine saygı duyar. Bu gizlilik politikası, uygulamanın hangi verileri topladığını, nasıl kullandığını ve koruduğunu açıklar.
 
 ## Toplanan Veriler
 

@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Oruç Zinciri - Ramazan Rehberi",
-    "slug": "oruc-zinciri-ramazan-rehberi",
+    "name": "Müslüman+",
+    "slug": "musluman-plus",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/android-chrome-512x512.png",
     "userInterfaceStyle": "automatic",
-    "description": "2026 Ramazan ayı için oruç takibi ve dini rehber uygulaması. Namaz vakitleri, Kur'an-ı Kerim, dualar, tesbih sayacı ve daha fazlası.",
+    "description": "Modern Müslüman yaşamı için her şey bir arada! Namaz vakitleri, Kur'an-ı Kerim, oruç takibi, dualar ve daha fazlası.",
     "primaryColor": "#1a5f3f",
     "splash": {
       "image": "./assets/android-chrome-512x512.png",
@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/android-chrome-512x512.png",
-      "bundleIdentifier": "com.nezihdertsiz.oruczinciri",
+      "bundleIdentifier": "com.nezihdertsiz.muslumanplus",
       "buildNumber": "1",
       "splash": {
         "image": "./assets/android-chrome-512x512.png",
@@ -42,7 +42,7 @@
         "resizeMode": "contain",
         "backgroundColor": "#1a5f3f"
       },
-      "package": "com.nezihdertsiz.oruczinciri",
+      "package": "com.nezihdertsiz.muslumanplus",
       "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -73,7 +73,7 @@
         }
       ]
     ],
-    "scheme": "oruc-zinciri",
+    "scheme": "musluman-plus",
     "extra": {
       "eas": {
         "projectId": "WILL_BE_GENERATED"

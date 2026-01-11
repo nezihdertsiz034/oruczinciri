@@ -1,8 +1,8 @@
-# 📿 Oruç Zinciri - Ramazan Rehberi
+# ➕ Müslüman+
 
-2026 Ramazan ayı için kapsamlı oruç takip ve dini rehber uygulaması.
+Modern Müslüman yaşamı için kapsamlı mobil uygulama.
 
-30 gün boyunca tutulan oruçları takip eden, namaz vakitlerini gösteren ve dini içerikler sunan kapsamlı mobil uygulama.
+Namaz vakitleri, Kur'an-ı Kerim, oruç takibi, dualar, tesbih sayacı ve daha fazlasını içeren modern İslami mobil uygulama.
 
 ## ✨ Tüm Özellikler
 

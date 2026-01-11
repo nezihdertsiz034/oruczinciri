@@ -1,10 +1,10 @@
-# Kullanım Koşulları - Oruç Zinciri
+# Kullanım Koşulları - Müslüman+
 
 **Son Güncelleme:** 11 Ocak 2026
 
 ## 1. Kabul
 
-Oruç Zinciri - Ramazan Rehberi uygulamasını ("Uygulama") kullanarak bu kullanım koşullarını kabul etmiş olursunuz.
+Müslüman+ uygulamasını ("Uygulama") kullanarak bu kullanım koşullarını kabul etmiş olursunuz.
 
 ## 2. Lisans
 
