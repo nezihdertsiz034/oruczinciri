@@ -147,11 +147,13 @@ async function scheduleNamazNotifications(sehirAdi: string, ayarlar: any) {
     // Tüm namaz vakitlerini planla (namazVakitleriAktif açıksa hepsi aktif)
     const namazVakitleri = [
       { isim: 'İmsak', saat: vakitler.imsak },
+      { isim: 'Güneş', saat: vakitler.gunes },
       { isim: 'Öğle', saat: vakitler.ogle },
       { isim: 'İkindi', saat: vakitler.ikindi },
       { isim: 'Akşam', saat: vakitler.aksam },
       { isim: 'Yatsı', saat: vakitler.yatsi },
     ];
+
 
     for (const vakit of namazVakitleri) {
       if (!vakit.saat || vakit.saat.length < 5) {

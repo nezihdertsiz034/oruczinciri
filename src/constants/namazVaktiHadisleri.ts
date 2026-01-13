@@ -243,20 +243,25 @@ export function getHadisByGunVeVakit(gunNumarasi: number, vakitIndex: number): B
 /**
  * Tarih ve vakit ismine göre hadis getirir
  * @param tarih - Date objesi
- * @param vakitIsmi - 'İmsak', 'Öğle', 'İkindi', 'Akşam', 'Yatsı'
+ * @param vakitIsmi - 'İmsak', 'Güneş', 'Öğle', 'İkindi', 'Akşam', 'Yatsı'
  * @returns Hadis metni ve kaynağı
  */
 export function getHadisByTarihVeVakit(tarih: Date, vakitIsmi: string): BildirimHadisi {
     const gunNumarasi = tarih.getDate(); // 1-31 arası
 
+    // 6 vakitli sistem: 0-5 arası index
     const vakitIndexMap: { [key: string]: number } = {
         'İmsak': 0,
-        'Öğle': 1,
-        'İkindi': 2,
-        'Akşam': 3,
-        'Yatsı': 4,
+        'Güneş': 1,
+        'Öğle': 2,
+        'İkindi': 3,
+        'Akşam': 4,
+        'Yatsı': 5,
     };
 
+    // 6 vakitli hesaplama (gün * 6 + vakit)
     const vakitIndex = vakitIndexMap[vakitIsmi] ?? 0;
-    return getHadisByGunVeVakit(gunNumarasi, vakitIndex);
+    const index = ((gunNumarasi - 1) * 6 + vakitIndex) % NAMAZ_VAKTI_HADISLERI.length;
+    return NAMAZ_VAKTI_HADISLERI[index];
 }
+

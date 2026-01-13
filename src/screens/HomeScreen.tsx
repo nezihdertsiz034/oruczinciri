@@ -7,6 +7,8 @@ import { TYPOGRAPHY } from '../constants/typography';
 import { BackgroundDecor } from '../components/BackgroundDecor';
 import { OrucSayaci } from '../components/OrucSayaci';
 import { OrucZinciri } from '../components/OrucZinciri';
+import { SonrakiNamazSayaci } from '../components/SonrakiNamazSayaci';
+import { RamazanTakvimi } from '../components/RamazanTakvimi';
 import { useNamazVakitleri } from '../hooks/useNamazVakitleri';
 import { useBildirimler } from '../hooks/useBildirimler';
 import { GUNUN_AYETLERI, HADISLER, HIZLI_ERISIM_1, HIZLI_ERISIM_2 } from '../constants/homeScreenConstants';
@@ -51,6 +53,12 @@ export default function HomeScreen() {
       >
         {/* Oruç Sayacı */}
         <OrucSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
+
+        {/* Sonraki Namaz Sayacı - Tüm 6 vakit + geri sayım */}
+        <SonrakiNamazSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
+
+        {/* Ramazan Takvimi - 30 günlük grid */}
+        <RamazanTakvimi />
 
         {/* Oruç Zinciri - Sayacın hemen altında */}
         <OrucZinciri />

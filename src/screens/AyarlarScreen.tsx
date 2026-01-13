@@ -27,6 +27,7 @@ import { temizleOrucVerileri } from '../utils/orucStorage';
 import { SaatSecici } from '../components/SaatSecici';
 import { useBildirimler } from '../hooks/useBildirimler';
 import { BackgroundDecor } from '../components/BackgroundDecor';
+import { konumdanSehirBul } from '../utils/konumServisi';
 
 export default function AyarlarScreen() {
   const { sendTestNotification, getScheduledNotifications, bildirimleriAyarla } =
@@ -63,6 +64,7 @@ export default function AyarlarScreen() {
   const [sahurSaatModalVisible, setSahurSaatModalVisible] = useState(false);
   const [iftarSaatModalVisible, setIftarSaatModalVisible] = useState(false);
   const [yukleniyor, setYukleniyor] = useState(true);
+  const [konumBuluyor, setKonumBuluyor] = useState(false);
 
   useEffect(() => {
     verileriYukle();
@@ -201,6 +203,33 @@ export default function AyarlarScreen() {
         {/* Şehir Seçimi */}
         <View style={styles.ayarBolumu}>
           <Text style={styles.ayarBaslik}>📍 Şehir Seçimi</Text>
+
+          {/* Konumdan Şehir Bul Butonu */}
+          <TouchableOpacity
+            style={[styles.ayarItem, { backgroundColor: 'rgba(46, 204, 113, 0.2)', marginBottom: 8 }]}
+            onPress={async () => {
+              setKonumBuluyor(true);
+              try {
+                const bulunanSehir = await konumdanSehirBul();
+                if (bulunanSehir) {
+                  await handleSehirSec(bulunanSehir);
+                  Alert.alert('✅ Şehir Bulundu', `Konumunuza göre şehriniz: ${bulunanSehir.isim}`);
+                }
+              } finally {
+                setKonumBuluyor(false);
+              }
+            }}
+            disabled={konumBuluyor}
+          >
+            {konumBuluyor ? (
+              <ActivityIndicator size="small" color="#2ecc71" />
+            ) : (
+              <Text style={[styles.ayarItemText, { color: '#2ecc71', fontWeight: 'bold' }]}>
+                🌐 Konumumu Bul
+              </Text>
+            )}
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.ayarItem}
             onPress={() => setSehirModalVisible(true)}
