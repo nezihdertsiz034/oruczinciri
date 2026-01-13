@@ -71,7 +71,7 @@ export default function WidgetScreen() {
         <View style={styles.bolum}>
           <Text style={styles.bolumBaslik}>🔎 Widget Önizleme</Text>
           <View style={styles.widgetKart}>
-            <Text style={styles.widgetBaslik}>Oruç Zinciri</Text>
+            <Text style={styles.widgetBaslik}>Şükür365</Text>
             <Text style={styles.widgetTarih}>{bugunMetni}</Text>
             <View style={styles.widgetSatir}>
               <Text style={styles.widgetEtiket}>İmsak</Text>
@@ -97,10 +97,10 @@ export default function WidgetScreen() {
         <View style={styles.bolum}>
           <Text style={styles.bolumBaslik}>📱 Ana Ekrana Ekleme</Text>
           <Text style={styles.adimText}>
-            iOS: Ana ekranda boş bir alana basılı tutun -> \"+\" -> \"Oruç Zinciri\" widgetını seçin.
+            iOS: Ana ekranda boş bir alana basılı tutun {'>'} "+" {'>'} "Şükür365" widgetını seçin.
           </Text>
           <Text style={styles.adimText}>
-            Android: Ana ekranda boş bir alana basılı tutun -> \"Widget'lar\" -> \"Oruç Zinciri\" widgetını seçin.
+            Android: Ana ekranda boş bir alana basılı tutun {'>'} "Widget'lar" {'>'} "Şükür365" widgetını seçin.
           </Text>
           <Text style={styles.bilgiText}>
             Widget için gösterilen içerik (imsak, iftar, kalan süre) bu ekrandaki önizleme ile aynıdır.

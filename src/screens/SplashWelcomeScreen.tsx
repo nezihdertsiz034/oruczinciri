@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ISLAMI_RENKLER } from '../constants/renkler';
-import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -116,7 +115,7 @@ export default function SplashWelcomeScreen({ onContinue }: SplashWelcomeScreenP
         <Animated.View style={[styles.decorCircle1, { opacity: decorFade }]} />
         <Animated.View style={[styles.decorCircle2, { opacity: decorFade }]} />
         <Animated.View style={[styles.decorCircle3, { opacity: decorFade }]} />
-        
+
         {/* Geometrik İslami desen */}
         <Animated.View style={[styles.geometricPattern, { opacity: decorFade }]}>
           <View style={styles.patternLine1} />
@@ -172,9 +171,9 @@ export default function SplashWelcomeScreen({ onContinue }: SplashWelcomeScreenP
 
           <Text style={styles.welcomeTitle}>Hoşgeldiniz</Text>
           <View style={styles.titleUnderline} />
-          
-          <Text style={styles.appName}>Oruç Zinciri</Text>
-          <Text style={styles.appSubtitle}>Ramazan Rehberi</Text>
+
+          <Text style={styles.appName}>Şükür365</Text>
+          <Text style={styles.appSubtitle}>Günlük Manevi Takip</Text>
 
           {/* Dekoratif ayraç */}
           <View style={styles.decorativeDivider}>

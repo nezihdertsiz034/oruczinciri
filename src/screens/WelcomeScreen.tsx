@@ -28,7 +28,7 @@ export default function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
   const [filtrelenmisSehirler, setFiltrelenmisSehirler] = useState<Sehir[]>(SEHIRLER);
   const [seciliSehir, setSeciliSehir] = useState<Sehir | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
-  
+
   // Animasyon değerleri
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -72,10 +72,10 @@ export default function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
     try {
       setYukleniyor(true);
       setSeciliSehir(sehir);
-      
+
       // Şehri kaydet
       await kaydetSehir(sehir);
-      
+
       // Kısa bir gecikme sonrası ana ekrana geç
       setTimeout(() => {
         onComplete();
@@ -88,7 +88,7 @@ export default function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
 
   const renderSehirItem = ({ item }: { item: Sehir }) => {
     const seciliMi = seciliSehir?.id === item.id;
-    
+
     return (
       <TouchableOpacity
         style={[
@@ -134,8 +134,8 @@ export default function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
           {/* Başlık Bölümü */}
           <View style={styles.baslikContainer}>
             <Text style={styles.emoji}>📿</Text>
-            <Text style={styles.baslik}>Oruç Zinciri</Text>
-            <Text style={styles.altBaslik}>Ramazan Rehberi</Text>
+            <Text style={styles.baslik}>Şükür365</Text>
+            <Text style={styles.altBaslik}>Günlük Manevi Takip</Text>
             <View style={styles.ayrac} />
             <Text style={styles.aciklama}>
               Namaz vakitlerinizi doğru alabilmek için{'\n'}

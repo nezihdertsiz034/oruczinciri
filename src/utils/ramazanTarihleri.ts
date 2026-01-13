@@ -9,10 +9,10 @@
  */
 export function getRamazan2026Tarihleri(): Date[] {
   const tarihler: Date[] = [];
-  
+
   // Ramazan 2026 başlangıcı: 27 Şubat 2026
   const baslangic = new Date(2026, 1, 27); // Ay 0-indexed (1 = Şubat)
-  
+
   // 30 gün Ramazan
   for (let i = 0; i < 30; i++) {
     const tarih = new Date(baslangic);
@@ -20,7 +20,7 @@ export function getRamazan2026Tarihleri(): Date[] {
     tarih.setHours(0, 0, 0, 0);
     tarihler.push(tarih);
   }
-  
+
   return tarihler;
 }
 
@@ -45,3 +45,16 @@ export function stringToTarih(tarihString: string): Date {
   const [yil, ay, gun] = tarihString.split('-').map(Number);
   return new Date(yil, ay - 1, gun);
 }
+
+/**
+ * Belirli bir tarihin Ramazan 2026 içinde olup olmadığını kontrol eder
+ * @param tarih - Kontrol edilecek tarih
+ * @returns boolean - Ramazan içinde mi?
+ */
+export function bugunRamazanMi(tarih: Date = new Date()): boolean {
+  const ramazanTarihleri = getRamazan2026Tarihleri();
+  const kontrolTarihStr = tarih.toISOString().split('T')[0];
+
+  return ramazanTarihleri.some(rt => rt.toISOString().split('T')[0] === kontrolTarihStr);
+}
+

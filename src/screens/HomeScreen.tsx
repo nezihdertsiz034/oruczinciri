@@ -8,12 +8,14 @@ import { BackgroundDecor } from '../components/BackgroundDecor';
 import { OrucSayaci } from '../components/OrucSayaci';
 import { OrucZinciri } from '../components/OrucZinciri';
 import { useNamazVakitleri } from '../hooks/useNamazVakitleri';
+import { useBildirimler } from '../hooks/useBildirimler';
 import { GUNUN_AYETLERI, HADISLER, HIZLI_ERISIM_1, HIZLI_ERISIM_2 } from '../constants/homeScreenConstants';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { vakitler, yukleniyor, hata } = useNamazVakitleri();
+  useBildirimler(); // Bildirimleri otomatik ayarla
   const navigation = useNavigation<any>();
 
   // Günün ayeti ve hadisi (günlük değişir) - useMemo ile optimize edildi

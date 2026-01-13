@@ -9,7 +9,9 @@ import {
   Modal,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { Audio } from 'expo-av';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
@@ -27,7 +29,34 @@ import { useBildirimler } from '../hooks/useBildirimler';
 import { BackgroundDecor } from '../components/BackgroundDecor';
 
 export default function AyarlarScreen() {
-  const { bildirimleriAyarla } = useBildirimler();
+  const { sendTestNotification, getScheduledNotifications, bildirimleriAyarla } =
+    useBildirimler();
+
+  const [playingSound, setPlayingSound] = useState<string | null>(null);
+
+  const playSound = async (type: 'ney' | 'ezan') => {
+    try {
+      setPlayingSound(type);
+      const soundFile = type === 'ney'
+        ? require('../../assets/ney.mp3')
+        : require('../../assets/ezan.mp3');
+
+      const { sound } = await Audio.Sound.createAsync(soundFile);
+      await sound.playAsync();
+
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setPlayingSound(null);
+          sound.unloadAsync();
+        }
+      });
+    } catch (error) {
+      console.error('Ses çalınamadı:', error);
+      setPlayingSound(null);
+      Alert.alert('Hata', 'Ses dosyası oynatılamadı.');
+    }
+  };
+
   const [bildirimAyarlari, setBildirimAyarlari] = useState<BildirimAyarlari | null>(null);
   const [sehir, setSehir] = useState<Sehir | null>(null);
   const [sehirModalVisible, setSehirModalVisible] = useState(false);
@@ -86,7 +115,7 @@ export default function AyarlarScreen() {
 
   const handleSaatSec = async (tip: 'sahur' | 'iftar', saat: string) => {
     if (!bildirimAyarlari) return;
-    
+
     try {
       const yeniAyarlar = {
         ...bildirimAyarlari,
@@ -139,6 +168,35 @@ export default function AyarlarScreen() {
       <BackgroundDecor />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>⚙️ Ayarlar</Text>
+
+        {/* Hata Ayıklama / Test - Sadece geliştirme/test için */}
+        <View style={styles.ayarBolumu}>
+          <Text style={styles.ayarBaslik}>🛠️ Hata Ayıklama</Text>
+          <TouchableOpacity
+            style={[styles.ayarItem, { backgroundColor: '#e8f5e9' }]}
+            onPress={async () => {
+              const success = await sendTestNotification();
+              if (success) {
+                Alert.alert('Test', '3 saniye içinde bildirim gelecek. Gelmezse lütfen bildirim izinlerini kontrol edin.');
+              }
+            }}
+          >
+            <Text style={[styles.ayarItemText, { color: '#2e7d32', fontWeight: 'bold' }]}>
+              🔔 Bildirimleri Test Et
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.ayarItem}
+            onPress={async () => {
+              const planli = await getScheduledNotifications();
+              Alert.alert('Planlı Bildirimler', `Şu an ${planli.length} adet bildirim zamanlanmış durumda.`);
+            }}
+          >
+            <Text style={styles.ayarItemText}>
+              📅 Zamanlananları Kontrol Et
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Şehir Seçimi */}
         <View style={styles.ayarBolumu}>
@@ -271,6 +329,33 @@ export default function AyarlarScreen() {
               thumbColor={ISLAMI_RENKLER.yaziBeyaz}
             />
           </View>
+
+          {/* Ses Testleri */}
+          <View style={styles.debugButonlar}>
+            <TouchableOpacity
+              style={[styles.debugButon, playingSound === 'ney' && styles.debugButonActive]}
+              onPress={() => playSound('ney')}
+              disabled={playingSound !== null}
+            >
+              {playingSound === 'ney' ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.debugButonText}>🪙 Ney Sesi Test Et</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.debugButon, playingSound === 'ezan' && styles.debugButonActive]}
+              onPress={() => playSound('ezan')}
+              disabled={playingSound !== null}
+            >
+              {playingSound === 'ezan' ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.debugButonText}>🕌 Ezan Sesi Test Et</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Veri Yönetimi */}
@@ -285,12 +370,20 @@ export default function AyarlarScreen() {
         <View style={styles.ayarBolumu}>
           <Text style={styles.ayarBaslik}>ℹ️ Hakkında</Text>
           <Text style={styles.hakkindaText}>
-            Oruç Zinciri - Ramazan Rehberi{'\n'}
+            Şükür365 - Günlük Manevi Takip{'\n'}
             Versiyon: 1.0.0{'\n'}
-            2026 Ramazan Ayı{'\n\n'}
-            Bu uygulama, Ramazan ayında oruç tutmanızı takip etmenize,
+            2026{'\n\n'}
+            Bu uygulama, oruç tutmanızı takip etmenize,
             namaz vakitlerini öğrenmenize ve dini içeriklerle manevi yolculuğunuzu
-            zenginleştirmenize yardımcı olmak için tasarlanmıştır.
+            zenginleştirmenize yardımcı olmak için tasarlanmıştır.{'\n\n'}
+            {'\n'}
+            <Text style={{ fontWeight: 'bold', color: '#1a5f3f' }}>
+              💚 Allah Rızası İçin{'\n'}
+            </Text>
+            Bu uygulama Nezih Dertsiz tarafından tamamen Allah rızası için geliştirilmiştir.
+            Uygulama içinde hiçbir reklam, ücretli özellik veya satın alma bulunmamaktadır
+            ve asla bulunmayacaktır. Tüm özellikler ücretsizdir ve her zaman ücretsiz kalacaktır.{'\n\n'}
+            Dualarınızı bekliyoruz. 🤲
           </Text>
         </View>
       </ScrollView>
@@ -539,5 +632,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     fontFamily: TYPOGRAPHY.body,
+  },
+  debugButonlar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    gap: 10,
+  },
+  debugButon: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  debugButonActive: {
+    backgroundColor: ISLAMI_RENKLER.altinOrta,
+    borderColor: ISLAMI_RENKLER.altinAcik,
+  },
+  debugButonText: {
+    color: ISLAMI_RENKLER.yaziBeyaz,
+    fontSize: 12,
+    fontWeight: 'bold',
+    fontFamily: TYPOGRAPHY.body,
+    textAlign: 'center',
   },
 });

@@ -6,16 +6,24 @@ import { useKibleYonu } from '../../hooks/useKibleYonu';
 import { ISLAMI_RENKLER } from '../../constants/renkler';
 import { TYPOGRAPHY } from '../../constants/typography';
 
-interface KibleScreenProps {}
+interface KibleScreenProps { }
 
 export default function KibleScreen(_props: KibleScreenProps) {
-  const { kibleYonu, yukleniyor, hata } = useKibleYonu();
+  const { kibleYonu, kibleOkAcisi, pusulaAcisi, yukleniyor, hata } = useKibleYonu();
 
   return (
     <EkstraScreenLayout gosterBaslik={false}>
-      <KibleYonuComponent kibleYonu={kibleYonu} yukleniyor={yukleniyor} hata={hata} />
+      <KibleYonuComponent
+        kibleYonu={kibleYonu}
+        kibleOkAcisi={kibleOkAcisi}
+        pusulaAcisi={pusulaAcisi}
+        yukleniyor={yukleniyor}
+        hata={hata}
+      />
       <View style={styles.bilgiKart}>
-        <Text style={styles.bilgiText}>Telefonu düz tutun ve hareket ettirmeden kısa süre bekleyin.</Text>
+        <Text style={styles.bilgiText}>
+          Pusulanın çalışması için telefonunuzu düz tutun ve hareket ettirerek kalibre edin.
+        </Text>
       </View>
     </EkstraScreenLayout>
   );

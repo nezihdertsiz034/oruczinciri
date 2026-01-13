@@ -1,79 +1,99 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
+import { Magnetometer } from 'expo-sensors';
 import { KibleYonu } from '../types';
 import { logger } from '../utils/logger';
 import { handleError } from '../utils/errorHandler';
 
 /**
- * Kıble yönünü hesaplayan ve yöneten hook
+ * Kıble yönünü hesaplayan ve gerçek zamanlı pusula verisi ile yöneten hook
  * 
- * @returns {Object} Kıble yönü, yükleniyor durumu ve hata mesajı
+ * @returns {Object} Kıble yönü, pusula açısı, yükleniyor durumu ve hata mesajı
  */
 export function useKibleYonu() {
   const [kibleYonu, setKibleYonu] = useState<KibleYonu | null>(null);
+  const [pusulaAcisi, setPusulaAcisi] = useState<number>(0);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState<string | null>(null);
 
+  // Kabe koordinatları
+  const kabeLatitude = 21.4225;
+  const kabeLongitude = 39.8262;
+
   useEffect(() => {
-    async function hesaplaKibleYonu() {
+    let subscription: any = null;
+
+    async function baslat() {
       try {
         setYukleniyor(true);
         setHata(null);
 
-        // Konum izni iste
+        // 1. Konum izni iste
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setHata('Konum izni verilmedi. Lütfen ayarlardan izin verin.');
           logger.warn('Konum izni verilmedi', undefined, 'useKibleYonu');
+          setYukleniyor(false);
           return;
         }
 
-        // Mevcut konumu al
+        // 2. Mevcut konumu al ve kıble açısını hesapla
         const location = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = location.coords;
 
-        // Kabe'nin koordinatları
-        const kabeLatitude = 21.4225;
-        const kabeLongitude = 39.8262;
-
-        // Kıble açısını hesapla
+        // Kıble açısını (Kuzey'den saat yönünde) hesapla
         const lat1 = (latitude * Math.PI) / 180;
         const lat2 = (kabeLatitude * Math.PI) / 180;
         const dLon = ((kabeLongitude - longitude) * Math.PI) / 180;
 
         const y = Math.sin(dLon) * Math.cos(lat2);
-        const x =
-          Math.cos(lat1) * Math.sin(lat2) -
-          Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 
-        let aci = (Math.atan2(y, x) * 180) / Math.PI;
-        aci = (aci + 360) % 360; // 0-360 arası normalize et
+        let kibleAcisi = (Math.atan2(y, x) * 180) / Math.PI;
+        kibleAcisi = (kibleAcisi + 360) % 360; // 0-360 arası
 
-        // Yön belirle
         const yonlar: Array<KibleYonu['yon']> = ['K', 'KB', 'B', 'GB', 'G', 'GD', 'D', 'KD'];
-        const yonIndex = Math.round(aci / 45) % 8;
+        const yonIndex = Math.round(kibleAcisi / 45) % 8;
         const yon = yonlar[yonIndex];
 
-        logger.debug('Kıble yönü hesaplandı', {
-          latitude: latitude.toFixed(4),
-          longitude: longitude.toFixed(4),
-          aci: aci.toFixed(2),
-          yon
-        }, 'useKibleYonu');
+        setKibleYonu({ aci: kibleAcisi, yon });
+        logger.debug('Kıble açısı hesaplandı', { kibleAcisi, yon }, 'useKibleYonu');
 
-        setKibleYonu({ aci, yon });
+        // 3. Pusulayı (Magnetometer) başlat
+        Magnetometer.setUpdateInterval(100);
+        subscription = Magnetometer.addListener(data => {
+          let { x, y } = data;
+          let angle = Math.atan2(y, x) * (180 / Math.PI);
+
+          // Android ve iOS farklarını kompanse et (yaklaşık pusher mantığı)
+          angle = angle < 0 ? angle + 360 : angle;
+          setPusulaAcisi(Math.round(angle));
+        });
+
       } catch (err) {
-        const appError = handleError(err, 'useKibleYonu.hesaplaKibleYonu');
+        const appError = handleError(err, 'useKibleYonu.baslat');
         setHata(appError.userMessage);
-        // Varsayılan değer (Türkiye için yaklaşık - İstanbul bazlı)
+        // Varsayılan (Türkiye/İstanbul civarı)
         setKibleYonu({ aci: 152, yon: 'GD' });
       } finally {
         setYukleniyor(false);
       }
     }
 
-    hesaplaKibleYonu();
+    baslat();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
   }, []);
 
-  return { kibleYonu, yukleniyor, hata };
+  return {
+    kibleYonu,
+    pusulaAcisi, // Cihazın baktığı yön
+    kibleOkAcisi: kibleYonu ? (kibleYonu.aci - pusulaAcisi + 360) % 360 : 0, // Okun ekranda ne kadar dönmesi gerektiği
+    yukleniyor,
+    hata
+  };
 }

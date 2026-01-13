@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
+import { OrucTamamlamaModal } from './OrucTamamlamaModal';
 
 /**
  * Oruç zinciri görselleştirme bileşeni
@@ -9,6 +10,8 @@ import { useOrucZinciri } from '../hooks/useOrucZinciri';
  */
 export const OrucZinciri: React.FC = () => {
   const { zincirHalkalari, yukleniyor, toplamIsaretli, gunuIsaretle } = useOrucZinciri();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [secilenGun, setSecilenGun] = useState(1);
 
   if (yukleniyor) {
     return (
@@ -23,9 +26,15 @@ export const OrucZinciri: React.FC = () => {
     return null;
   }
 
-  const handleHalkaPress = async (tarih: Date, isaretli: boolean) => {
+  const handleHalkaPress = async (tarih: Date, isaretli: boolean, gunNumarasi: number) => {
     try {
       await gunuIsaretle(tarih, !isaretli);
+
+      // Sadece oruç tamamlandığında (işaretlendiğinde) modalı göster
+      if (!isaretli) {
+        setSecilenGun(gunNumarasi);
+        setModalVisible(true);
+      }
     } catch (error) {
       console.error('Halka işaretlenirken hata:', error);
     }
@@ -40,14 +49,14 @@ export const OrucZinciri: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.baslikContainer}>
-        <Text style={styles.baslik}>🔗 Oruç Zinciri</Text>
+        <Text style={styles.baslik}>🔗 Şükür365</Text>
         <Text style={styles.altBaslik}>
           {toplamIsaretli} / {zincirHalkalari.length} gün tamamlandı
         </Text>
       </View>
 
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -67,7 +76,7 @@ export const OrucZinciri: React.FC = () => {
                   <TouchableOpacity
                     key={globalIndex}
                     style={halkaStyle}
-                    onPress={() => handleHalkaPress(halka.tarih, halka.isaretli)}
+                    onPress={() => handleHalkaPress(halka.tarih, halka.isaretli, halka.gunNumarasi)}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.halkaNumara}>{halka.gunNumarasi}</Text>
@@ -100,6 +109,13 @@ export const OrucZinciri: React.FC = () => {
           💡 Halkalara dokunarak oruç günlerinizi işaretleyebilirsiniz
         </Text>
       </View>
+
+      {/* Oruç Tamamlama Modalı */}
+      <OrucTamamlamaModal
+        visible={modalVisible}
+        gunNumarasi={secilenGun}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
 };

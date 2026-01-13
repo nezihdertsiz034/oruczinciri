@@ -59,7 +59,7 @@ function AnaSayfaStack() {
             <Stack.Screen
                 name="AnaSayfaMain"
                 component={HomeScreen}
-                options={{ title: '📿 Oruç Zinciri' }}
+                options={{ title: '📿 Şükür365' }}
             />
         </Stack.Navigator>
     );

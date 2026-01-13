@@ -148,7 +148,7 @@ export default function QuranScreen() {
         const turkishText = currentSurah.turkish.ayahs[ayahIndex].text;
         const ayahNumberInSurah = currentSurah.arabic.ayahs[ayahIndex].numberInSurah;
 
-        const shareText = `${currentSurah.arabic.englishName} Suresi, Ayet ${ayahNumberInSurah}\n\n${arabicText}\n\n${turkishText}\n\n- Oruç Zinciri`;
+        const shareText = `${currentSurah.arabic.englishName} Suresi, Ayet ${ayahNumberInSurah}\n\n${arabicText}\n\n${turkishText}\n\n- Şükür365`;
 
         try {
             await RNShare.share({

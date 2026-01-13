@@ -5,15 +5,19 @@ import { ISLAMI_RENKLER } from '../constants/renkler';
 
 interface KibleYonuProps {
   kibleYonu: KibleYonuType | null;
+  kibleOkAcisi?: number;
+  pusulaAcisi?: number;
   yukleniyor?: boolean;
   hata?: string | null;
 }
 
 /**
- * Kıble yönü göstergesi bileşeni
+ * Kıble yönü göstergesi bileşeni - Gerçek zamanlı pusula destekli
  */
 export const KibleYonu: React.FC<KibleYonuProps> = ({
   kibleYonu,
+  kibleOkAcisi = 0,
+  pusulaAcisi = 0,
   yukleniyor = false,
   hata = null,
 }) => {
@@ -52,35 +56,42 @@ export const KibleYonu: React.FC<KibleYonuProps> = ({
   return (
     <View style={styles.container}>
       <Text style={styles.baslik}>🕌 Kıble Yönü</Text>
-      
+
       <View style={styles.pusulaContainer}>
         <View style={styles.pusula}>
-          {/* Pusula çerçevesi */}
-          <View style={styles.pusulaCerceve}>
-            {/* Yön göstergesi */}
-            <View
-              style={[
-                styles.yonGostergesi,
-                {
-                  transform: [{ rotate: `${kibleYonu.aci}deg` }],
-                },
-              ]}
-            >
-              <View style={styles.ok} />
-            </View>
-            
-            {/* Pusula noktaları */}
+          {/* Pusula çerçevesi ve yönler - Cihazın baktığı yöne göre döner */}
+          <View
+            style={[
+              styles.pusulaCerceve,
+              { transform: [{ rotate: `${-pusulaAcisi}deg` }] }
+            ]}
+          >
             <Text style={[styles.pusulaNokta, styles.kuzey]}>K</Text>
             <Text style={[styles.pusulaNokta, styles.guney]}>G</Text>
             <Text style={[styles.pusulaNokta, styles.dogu]}>D</Text>
             <Text style={[styles.pusulaNokta, styles.bati]}>B</Text>
+          </View>
+
+          {/* Kıble oku - Her zaman Kabe'yi gösterir */}
+          <View
+            style={[
+              styles.yonGostergesi,
+              {
+                transform: [{ rotate: `${kibleOkAcisi}deg` }],
+              },
+            ]}
+          >
+            <View style={styles.ok} />
           </View>
         </View>
       </View>
 
       <View style={styles.bilgiContainer}>
         <Text style={styles.yonText}>{yonIsimleri[kibleYonu.yon]}</Text>
-        <Text style={styles.aciText}>{Math.round(kibleYonu.aci)}°</Text>
+        <Text style={styles.aciText}>{Math.round(kibleYonu.aci)}° (Kuzey'den)</Text>
+        <View style={styles.pusulaAciKarti}>
+          <Text style={styles.pusulaAciText}>Cihaz Yönü: {pusulaAcisi}°</Text>
+        </View>
       </View>
     </View>
   );
@@ -108,70 +119,67 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pusulaContainer: {
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
     marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pusula: {
-    width: '100%',
-    height: '100%',
+    width: 220,
+    height: 220,
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pusulaCerceve: {
     width: '100%',
     height: '100%',
-    borderRadius: 100,
+    borderRadius: 110,
     borderWidth: 3,
-    borderColor: ISLAMI_RENKLER.altinAcik,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    position: 'relative',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
   },
   yonGostergesi: {
     position: 'absolute',
-    width: 4,
-    height: 80,
-    top: '50%',
-    left: '50%',
-    marginLeft: -2,
-    marginTop: -80,
+    width: 10,
+    height: 100,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    // transform pivot noktası merkez olmalı
   },
   ok: {
     width: 0,
     height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 60,
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderBottomWidth: 80,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderBottomColor: ISLAMI_RENKLER.altinAcik,
+    marginTop: -40, // Merkeze hizalamak için
   },
   pusulaNokta: {
     position: 'absolute',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: ISLAMI_RENKLER.yaziBeyaz,
   },
   kuzey: {
     top: 10,
-    left: '50%',
-    marginLeft: -8,
+    color: ISLAMI_RENKLER.altinAcik,
   },
   guney: {
     bottom: 10,
-    left: '50%',
-    marginLeft: -8,
   },
   dogu: {
-    right: 10,
-    top: '50%',
-    marginTop: -10,
+    right: 15,
   },
   bati: {
-    left: 10,
-    top: '50%',
-    marginTop: -10,
+    left: 15,
   },
   bilgiContainer: {
     alignItems: 'center',
@@ -181,10 +189,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: ISLAMI_RENKLER.altinAcik,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   aciText: {
-    fontSize: 16,
+    fontSize: 14,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    marginBottom: 8,
+  },
+  pusulaAciKarti: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  pusulaAciText: {
+    fontSize: 12,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
   },
   yukleniyorText: {
@@ -198,9 +217,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-
-
-
-
-

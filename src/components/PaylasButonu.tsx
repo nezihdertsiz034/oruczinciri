@@ -17,7 +17,7 @@ export const PaylasButonu: React.FC<PaylasButonuProps> = ({
 }) => {
   const handlePaylas = async () => {
     try {
-      const paylasMetni = `📿 Oruç Zinciri - 2026 Ramazan
+      const paylasMetni = `📿 Şükür365 - Günlük Manevi Takip
 
 ✅ Toplam Oruç: ${istatistikler.toplamOruc} / ${istatistikler.toplamGun} gün
 🔗 Kesintisiz Zincir: ${istatistikler.kesintisizZincir} gün
@@ -25,7 +25,7 @@ export const PaylasButonu: React.FC<PaylasButonuProps> = ({
 
 ${istatistikler.rozetler.length > 0 ? `🏆 Rozetler: ${istatistikler.rozetler.join(', ')}` : ''}
 
-Ramazan ayında oruç tutmaya devam ediyorum! 💪`;
+Manevi gelişimime devam ediyorum! 💪`;
 
       await Share.share({
         message: paylasMetni,

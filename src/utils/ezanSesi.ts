@@ -1,61 +1,54 @@
-import { createAudioPlayer, AudioPlayer } from 'expo-audio';
 import * as Notifications from 'expo-notifications';
+import { Audio } from 'expo-av';
 
 /**
  * Ezan sesi çalma yardımcı fonksiyonları
+ * Expo AV kullanarak daha güvenilir ses çalma
  */
 
-let audioPlayer: AudioPlayer | null = null;
+let sound: Audio.Sound | null = null;
 let listener: Notifications.Subscription | null = null;
-let playbackCheckInterval: NodeJS.Timeout | null = null;
 
 /**
  * Ezan sesini çalar
- * @param sesUrl Ezan sesi URL'i (opsiyonel, varsayılan online ses kullanır)
  */
-export async function ezanSesiCal(sesUrl?: string): Promise<void> {
+export async function ezanSesiCal(): Promise<void> {
   try {
-    // Önceki ses varsa durdur ve temizle
-    if (audioPlayer) {
+    // Önceki ses varsa durdur
+    if (sound) {
       await ezanSesiDurdur();
     }
 
-    // Ezan sesi URL'i (online kaynak - güvenilir bir kaynak)
-    // Not: Gerçek uygulamada yerel dosya kullanılması önerilir
-    const ezanUrl = sesUrl || 'https://www.islamicfinder.org/prayer-times/assets/audio/azan.mp3';
-    
-    // Alternatif: Yerel dosya kullanmak isterseniz
-    // const ezanUrl = require('../assets/ezan.mp3');
+    // Ses modunu ayarla
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      shouldDuckAndroid: true,
+    });
 
-    // AudioPlayer oluştur ve kaynağı yükle
-    audioPlayer = createAudioPlayer(ezanUrl);
-    
-    // Ses bittiğinde otomatik temizleme için interval başlat
-    playbackCheckInterval = setInterval(() => {
-      if (audioPlayer && audioPlayer.duration && audioPlayer.currentTime) {
-        // Ses bittiğinde (currentTime >= duration - küçük tolerans)
-        if (audioPlayer.currentTime >= audioPlayer.duration - 0.2) {
-          ezanSesiDurdur();
-        }
+    // Yerel ezan sesi dosyasını yükle
+    const { sound: newSound } = await Audio.Sound.createAsync(
+      require('../../assets/ezan.mp3'),
+      { shouldPlay: true, volume: 1.0 }
+    );
+
+    sound = newSound;
+
+    // Ses bittiğinde otomatik temizle
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded && status.didJustFinish) {
+        ezanSesiDurdur();
       }
-    }, 500); // Her 500ms'de bir kontrol et
-
-    // Ses çalmayı başlat
-    audioPlayer.play();
+    });
   } catch (error) {
     console.error('Ezan sesi çalınırken hata:', error);
-    // Hata durumunda sessiz devam et
-    if (audioPlayer) {
+    if (sound) {
       try {
-        audioPlayer.release();
+        await sound.unloadAsync();
       } catch (e) {
-        // Release hatası görmezden gel
+        // Ignore
       }
-      audioPlayer = null;
-    }
-    if (playbackCheckInterval) {
-      clearInterval(playbackCheckInterval);
-      playbackCheckInterval = null;
+      sound = null;
     }
   }
 }
@@ -65,22 +58,14 @@ export async function ezanSesiCal(sesUrl?: string): Promise<void> {
  */
 export async function ezanSesiDurdur(): Promise<void> {
   try {
-    if (playbackCheckInterval) {
-      clearInterval(playbackCheckInterval);
-      playbackCheckInterval = null;
-    }
-    if (audioPlayer) {
-      audioPlayer.pause();
-      audioPlayer.release();
-      audioPlayer = null;
+    if (sound) {
+      await sound.stopAsync();
+      await sound.unloadAsync();
+      sound = null;
     }
   } catch (error) {
     console.error('Ezan sesi durdurulurken hata:', error);
-    audioPlayer = null;
-    if (playbackCheckInterval) {
-      clearInterval(playbackCheckInterval);
-      playbackCheckInterval = null;
-    }
+    sound = null;
   }
 }
 
@@ -97,7 +82,7 @@ export function bildirimEzanSesiBaslat(): void {
   // Bildirim listener'ı ekle
   listener = Notifications.addNotificationReceivedListener(async (notification) => {
     const ezanSesi = notification.request.content.data?.ezanSesi;
-    
+
     // Eğer bu bir namaz vakti bildirimi ve ezan sesi aktifse
     if (ezanSesi && notification.request.content.title?.includes('Namazı')) {
       await ezanSesiCal();
@@ -115,4 +100,3 @@ export function bildirimEzanSesiTemizle(): void {
   }
   ezanSesiDurdur();
 }
-
