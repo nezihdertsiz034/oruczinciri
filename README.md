@@ -7,12 +7,27 @@ Namaz vakitleri, Kur'an-ı Kerim, oruç takibi, dualar, tesbih sayacı ve daha f
 ## ✨ Tüm Özellikler
 
 ### 🏠 Ana Sayfa
-- **🕐 Dini Duvar Saati** - Analog saat, Arapça "Allah" yazısı, oruç saatlerinde altın renk
-- **⏱️ Oruç Sayacı** - Kalan süre gösterimi (Saat:Dakika:Saniye), büyük sayılar
+- **⏱️ Oruç Sayacı** - İftara/Sahura kalan süre (Saat:Dakika:Saniye), dairesel ilerleme göstergesi
+- **🕌 Sonraki Namaz Sayacı** - 6 vakit gösterimi, sonraki namaza geri sayım
+- **📅 Ramazan Takvimi** - 30 günlük kompakt grid, oruç tutulan günleri işaretleme
 - **🔗 Oruç Zinciri** - 30 günlük görsel zincir, günlük işaretleme
-- **📖 Hadis-i Şerif** - Günlük hadis gösterimi
-- **📿 Şükür Ayetleri** - Oruç tamamlandığında gösterilen ayetler
-- **📱 Akordeon Menü** - Kategorize, mobil uyumlu menü
+- **📖 Günün Ayeti** - Günlük ayet gösterimi
+- **📿 Günün Hadisi** - Günlük hadis gösterimi
+- **⚡ Hızlı Erişim** - Tesbih, Kıble, Dualar, Notlar ve daha fazlası
+
+### 🔔 Bildirim Sistemi (Yeni Güncellenmiş)
+- **6 Vakit Namaz Bildirimi** - İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı
+- **150 Hadis-i Şerif** - Her namaz vaktinde farklı hadis
+- **7 Günlük Planlama** - Önümüzdeki 7 gün önceden planlanır
+- **Timezone Güvenli** - Doğru saat hesaplaması
+- **Android 12+ Uyumlu** - Exact Alarm desteği
+- **Sahur/İftar Hatırlatıcısı** - Özelleştirilebilir saatler
+- **Ezan Sesi** - Namaz vakitlerinde ses çalma
+
+### 📍 Otomatik Konum (YENİ)
+- **GPS ile Şehir Belirleme** - Konumdan en yakın şehri otomatik bul
+- **81 İl Koordinatları** - Haversine formülü ile mesafe hesaplama
+- **Büyük Şehirler Öncelikli** - İstanbul, Ankara, İzmir listenin başında
 
 ### 📊 İstatistikler
 - Toplam oruç sayısı
@@ -46,7 +61,6 @@ Namaz vakitleri, Kur'an-ı Kerim, oruç takibi, dualar, tesbih sayacı ve daha f
 - Arama özelliği
 
 ### ✨ Ekstra Özellikler
-Bu özellikler menüde ayrı ayrı sayfa olarak yer alır.
 - **🧭 Kıble Yönü** - GPS ile kıble tespiti
 - **🕌 Teravih Takibi** - Günlük teravih işaretleme
 - **💝 Sadaka Takibi** - Sadaka ekleme ve toplam gösterimi
@@ -56,31 +70,33 @@ Bu özellikler menüde ayrı ayrı sayfa olarak yer alır.
 - **🍽️ İftar Kalori Takibi** - İftar menüsü kalori takibi
 - **💡 İftar Menüsü Önerileri** - Kategori bazlı, yenilenebilir öneriler
 
-### 🧩 Ana Ekran Widget
-- Widget önizleme kartı
-- İmsak/iftar saatleri ve kalan süre
-- iOS/Android ekleme adımları
-
 ### ⚙️ Ayarlar
-- **📍 Şehir Seçimi** - 81 il, otomatik vakit güncelleme
+- **📍 Şehir Seçimi:**
+  - 81 il desteği
+  - "🌐 Konumumu Bul" butonu (GPS ile otomatik)
+  - Büyük şehirler listenin başında
 - **🔔 Bildirim Ayarları:**
   - Sahur Hatırlatıcısı (saat seçici ile)
   - İftar Hatırlatıcısı (saat seçici ile)
-  - Namaz Vakitleri Bildirimleri (şehre göre otomatik)
-  - **🕌 Ezan Sesi** - Namaz vakitlerinde ezan sesi çalma
+  - Namaz Vakitleri Bildirimleri (6 vakit)
+  - Ezan Sesi (namaz vakitlerinde)
   - Günlük Oruç Hatırlatıcısı
+- **🛠️ Hata Ayıklama:**
+  - Bildirimleri Test Et
+  - Zamanlananları Kontrol Et
 - **🗑️ Veri Yönetimi** - Verileri sıfırlama
 
 ## 🛠️ Teknoloji Stack
 
 - **React Native** (Expo SDK 54)
 - **TypeScript**
-- **React Navigation** (Drawer Navigator)
+- **React Navigation** (Bottom Tabs + Native Stack)
 - **AsyncStorage** - Yerel veri saklama
-- **Expo Notifications** - Bildirimler
+- **Expo Notifications** - Bildirimler (timestamp tabanlı)
 - **Expo AV** - Ses çalma (ezan sesi)
-- **Expo Location** - Konum servisleri
-- **Aladhan API** - Namaz vakitleri
+- **Expo Location** - GPS konum servisleri
+- **React Native SVG** - Dairesel ilerleme göstergeleri
+- **Aladhan API** - Namaz vakitleri (Diyanet uyumlu metot)
 
 ## 🚀 Kurulum
 
@@ -112,18 +128,23 @@ npx expo start --ios
 npx expo start --android
 ```
 
+### APK Oluşturma (Yerel)
+```bash
+cd android && ./gradlew assembleRelease
+```
+APK konumu: `android/app/build/outputs/apk/release/app-release.apk`
+
 ## 📁 Proje Yapısı
 
 ```
-oruc/
+musluman-plus/
 ├── src/
 │   ├── components/        # Bileşenler
-│   │   ├── DiniDuvarSaati.tsx
 │   │   ├── OrucSayaci.tsx
+│   │   ├── SonrakiNamazSayaci.tsx  # YENİ
+│   │   ├── RamazanTakvimi.tsx      # YENİ
 │   │   ├── OrucZinciri.tsx
-│   │   ├── HadisGosterici.tsx
-│   │   ├── OrucFaydalari.tsx (Şükür Ayetleri)
-│   │   ├── AkordeonMenu.tsx
+│   │   ├── BackgroundDecor.tsx
 │   │   ├── SaatSecici.tsx
 │   │   └── ...
 │   ├── screens/           # Ekranlar
@@ -133,17 +154,8 @@ oruc/
 │   │   ├── TesbihScreen.tsx
 │   │   ├── KuranAyetleriScreen.tsx
 │   │   ├── NotlarScreen.tsx
-│   │   ├── ekstra/         # Ekstra sayfalar
-│   │   │   ├── ZekatScreen.tsx
-│   │   │   ├── FitreScreen.tsx
-│   │   │   ├── IftarKaloriScreen.tsx
-│   │   │   ├── KibleScreen.tsx
-│   │   │   ├── TeravihScreen.tsx
-│   │   │   ├── SadakaScreen.tsx
-│   │   │   ├── SuHatirlaticiScreen.tsx
-│   │   │   └── IftarMenuOnerileriScreen.tsx
-│   │   ├── WidgetScreen.tsx
-│   │   └── AyarlarScreen.tsx
+│   │   ├── AyarlarScreen.tsx
+│   │   └── ekstra/         # Ekstra sayfalar
 │   ├── hooks/             # Custom Hooks
 │   │   ├── useNamazVakitleri.ts
 │   │   ├── useBildirimler.ts
@@ -153,12 +165,13 @@ oruc/
 │   │   ├── namazVakitleri.ts
 │   │   ├── storage.ts
 │   │   ├── ezanSesi.ts
-│   │   ├── sahurVakitleri.ts
+│   │   ├── konumServisi.ts  # YENİ - GPS şehir belirleme
 │   │   └── ramazanTarihleri.ts
 │   ├── constants/         # Sabitler
 │   │   ├── renkler.ts
 │   │   ├── sehirler.ts
 │   │   ├── hadisler.ts
+│   │   ├── namazVaktiHadisleri.ts  # YENİ - 150 hadis
 │   │   ├── kuranAyetleri.ts
 │   │   ├── sukurAyetleri.ts
 │   │   └── dualars.ts
@@ -166,6 +179,9 @@ oruc/
 │   └── navigation/        # Navigasyon
 │       └── AppNavigator.tsx
 ├── assets/                # Görseller ve sesler
+│   ├── ney.mp3           # Bildirim sesi
+│   └── ezan.mp3          # Ezan sesi
+├── android/               # Android native kodu
 ├── app.json               # Expo konfigürasyonu
 ├── package.json
 └── README.md
@@ -175,14 +191,15 @@ oruc/
 
 ### İlk Kullanım
 1. Uygulamayı açın
-2. Ayarlar → Şehir Seçimi'nden şehrinizi seçin
-3. Bildirim izinlerini verin
-4. Ana sayfada namaz vakitlerini görüntüleyin
+2. Ayarlar → "🌐 Konumumu Bul" ile şehrinizi otomatik belirleyin
+   - veya listeden manuel seçin
+3. Bildirim izinlerini verin (Android 12+ için "Tam Alarm" izni)
+4. Ana sayfada namaz vakitlerini ve sayaçları görüntüleyin
 
 ### Günlük Kullanım
-1. Ana sayfada kalan süreyi takip edin
+1. Ana sayfada sonraki namaza kalan süreyi takip edin
 2. Oruç tamamlandığında günü işaretleyin
-3. Şükür ayetini okuyun
+3. Ramazan takviminde ilerlemenizi görün
 4. Hadis-i şerifi okuyun
 5. İstatistiklerinizi kontrol edin
 
@@ -190,55 +207,56 @@ oruc/
 1. Ayarlar → Bildirim Ayarları
 2. İstediğiniz bildirimleri aktif edin
 3. Saatleri özelleştirin (Sahur/İftar)
-4. Ezan sesini açın
-5. Namaz vakitleri otomatik ayarlanır
-
-### Hesaplayıcılar
-1. Ekstra Özellikler ekranına gidin
-2. Zekat/Fitre/Kalori hesaplayıcılarını kullanın
-3. Sonuçları görüntüleyin
+4. **Test için:** "Bildirimleri Test Et" butonuna tıklayın
+5. Namaz vakitleri otomatik olarak 7 gün önceden planlanır
 
 ## 📅 2026 Ramazan
 
-- **Başlangıç:** 27 Şubat 2026
-- **Bitiş:** 28 Mart 2026
+- **Başlangıç:** 18 Şubat 2026
+- **Bitiş:** 19 Mart 2026
 - **Süre:** 30 gün
 - Tüm özellikler 2026 tarihlerine göre optimize edilmiştir
 
-## 🔔 Bildirim Özellikleri
+## 🔔 Bildirim Sistemi Detayları
 
 ### Bildirim Türleri
-- ✅ Sahur Hatırlatıcısı (özelleştirilebilir saat)
-- ✅ İftar Hatırlatıcısı (özelleştirilebilir saat)
-- ✅ Namaz Vakitleri (5 vakit, şehre göre otomatik)
-- ✅ Ezan Sesi (namaz vakitlerinde)
-- ✅ Günlük Oruç Hatırlatıcısı
-- ✅ Sahur Su İçme Hatırlatıcısı (2026 Ramazan için)
+| Tür | Açıklama | Varsayılan |
+|-----|----------|------------|
+| İmsak | Sabah namazı bildirimi + hadis | Aktif |
+| Güneş | Güneş doğuşu bildirimi + hadis | Aktif |
+| Öğle | Öğle namazı bildirimi + hadis | Aktif |
+| İkindi | İkindi namazı bildirimi + hadis | Aktif |
+| Akşam | Akşam namazı (iftar) bildirimi + hadis | Aktif |
+| Yatsı | Yatsı namazı bildirimi + hadis | Aktif |
+| Sahur | İmsak'tan önce hatırlatma | Aktif |
+| İftar | Akşam'dan önce hatırlatma | Aktif |
 
-### Bildirim Özellikleri
-- 30 günlük planlama
-- Şehre göre otomatik vakitler
-- Ezan sesi desteği
-- Arka planda çalışma
+### Teknik Özellikler
+- **Planlama:** 7 gün önceden
+- **Tetikleyici:** Timestamp tabanlı (milisaniye)
+- **Timezone:** Yerel saat dilimine göre hesaplama
+- **Geçmiş Kontrol:** 30 saniye buffer ile
+- **Android Kanal:** MAX öncelik, titreşim, ses
 
 ## 🎨 Tasarım
 
 - **Modern glassmorphism** efektleri
 - **İslami yeşil tonları** ve altın vurgular
 - **Büyük, okunabilir fontlar**
-- **Yumuşak gölgeler** ve animasyonlar
-- **Mobil uyumlu** akordeon menü
+- **Dairesel ilerleme göstergeleri**
+- **Mobil uyumlu** bottom tab navigasyon
 
 ## 📱 Desteklenen Platformlar
 
 - ✅ iOS
-- ✅ Android
+- ✅ Android (API 24+)
 - ⚠️ Web (sınırlı özellikler)
 
 ## 🔒 Gizlilik
 
 - Tüm veriler cihazda saklanır
 - İnternet bağlantısı sadece namaz vakitleri ve kıble yönü için gerekir
+- Konum izni sadece şehir belirleme için kullanılır
 - Hiçbir veri sunucuya gönderilmez
 
 ## 📝 Lisans
@@ -248,10 +266,11 @@ Bu proje özel bir projedir.
 ## 🙏 Teşekkürler
 
 - Aladhan API - Namaz vakitleri
+- Expo - React Native framework
 - Tüm açık kaynak kütüphaneler
 
 ---
 
-**Versiyon:** 1.0.0  
-**Son Güncelleme:** 2026  
-**Ramazan:** 2026 (27 Şubat - 28 Mart)
+**Versiyon:** 1.1.0  
+**Son Güncelleme:** Ocak 2026  
+**Ramazan:** 2026 (18 Şubat - 19 Mart)
