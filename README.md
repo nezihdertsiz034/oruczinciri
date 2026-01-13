@@ -212,10 +212,13 @@ musluman-plus/
 
 ## 📅 2026 Ramazan
 
-- **Başlangıç:** 18 Şubat 2026
+- **Başlangıç:** 19 Şubat 2026
 - **Bitiş:** 19 Mart 2026
 - **Süre:** 30 gün
+- **İlk Oruç:** 19 Şubat
+- **Son Oruç (Arefe):** 19 Mart
 - Tüm özellikler 2026 tarihlerine göre optimize edilmiştir
+
 
 ## 🔔 Bildirim Sistemi Detayları
 
@@ -273,4 +276,4 @@ Bu proje özel bir projedir.
 
 **Versiyon:** 1.1.0  
 **Son Güncelleme:** Ocak 2026  
-**Ramazan:** 2026 (18 Şubat - 19 Mart)
+**Ramazan:** 2026 (19 Şubat - 19 Mart)

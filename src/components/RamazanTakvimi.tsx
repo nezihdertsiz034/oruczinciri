@@ -18,10 +18,11 @@ interface RamazanTakvimiProps {
 export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
     const { zincirHalkalari, toplamIsaretli } = useOrucZinciri();
 
-    // Ramazan başlangıç ve bitiş tarihlerini hesapla (örnek: 2026 Ramazan)
+    // Ramazan başlangıç ve bitiş tarihlerini hesapla (2026 Ramazan)
     const ramazanGunleri = useMemo(() => {
-        // 2026 Ramazan tahmini: 18 Şubat - 19 Mart
-        const ramazanBaslangic = new Date(2026, 1, 18); // Şubat = 1
+        // 2026 Ramazan: 19 Şubat - 19 Mart
+        const ramazanBaslangic = new Date(2026, 1, 19); // Şubat = 1
+
         const bugun = new Date();
         bugun.setHours(0, 0, 0, 0);
 
