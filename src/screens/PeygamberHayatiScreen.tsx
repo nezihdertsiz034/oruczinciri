@@ -169,8 +169,7 @@ export default function PeygamberHayatiScreen() {
                 {/* Başlık */}
                 <View style={styles.baslikContainer}>
                     <Text style={styles.baslikEmoji}>☪️</Text>
-                    <Text style={styles.baslik}>Hz. Muhammed</Text>
-                    <Text style={styles.altBaslik}>Sallallahu Aleyhi ve Sellem</Text>
+                    <Text style={styles.baslik}>Hz. Muhammed (S.A.V.)</Text>
                     <View style={styles.ayrac}>
                         <View style={styles.ayracCizgi} />
                         <Text style={styles.ayracYildiz}>✦</Text>

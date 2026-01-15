@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +19,7 @@ import AyarlarScreen from '../screens/AyarlarScreen';
 import NotlarScreen from '../screens/NotlarScreen';
 import WidgetScreen from '../screens/WidgetScreen';
 import QuranScreen from '../screens/QuranScreen';
+import { KaabaIcon, TrackingIcon, ToolsIcon, MoreIcon, QuranIcon } from '../components/IslamicIcons';
 
 // Ekstra ekranlar
 import ZekatScreen from '../screens/ekstra/ZekatScreen';
@@ -35,13 +36,14 @@ const Stack = createNativeStackNavigator();
 
 // Tab ikonu component
 interface TabIconProps {
-    emoji: string;
+    IconComponent: React.ElementType;
     focused: boolean;
+    color: string;
 }
 
-const TabIcon = ({ emoji, focused }: TabIconProps) => (
+const TabIcon = ({ IconComponent, focused, color }: TabIconProps) => (
     <View style={[styles.tabIconContainer, focused && styles.tabIconContainerActive]}>
-        <Text style={[styles.tabIcon, focused && styles.tabIconActive]}>{emoji}</Text>
+        <IconComponent color={color} size={24} />
     </View>
 );
 
@@ -90,8 +92,8 @@ function TakipStack() {
     );
 }
 
-// İbadet Stack
-function IbadetStack() {
+// Kur'an Stack
+function KuranStack() {
     return (
         <Stack.Navigator
             screenOptions={{
@@ -102,14 +104,14 @@ function IbadetStack() {
             }}
         >
             <Stack.Screen
-                name="DualarMain"
-                component={DualarScreen}
-                options={{ title: '🤲 Dualar' }}
-            />
-            <Stack.Screen
-                name="KuranKerim"
+                name="KuranMain"
                 component={QuranScreen}
                 options={{ title: '📖 Kur\'an-ı Kerim', headerShown: false }}
+            />
+            <Stack.Screen
+                name="Dualar"
+                component={DualarScreen}
+                options={{ title: '🤲 Dualar' }}
             />
             <Stack.Screen
                 name="KuranAyetleri"
@@ -210,36 +212,46 @@ export default function TabNavigator() {
                 name="Ana"
                 component={AnaSayfaStack}
                 options={{
-                    tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon IconComponent={KaabaIcon} focused={focused} color={color} />
+                    ),
                 }}
             />
             <Tab.Screen
                 name="Takip"
                 component={TakipStack}
                 options={{
-                    tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon IconComponent={TrackingIcon} focused={focused} color={color} />
+                    ),
                 }}
             />
             <Tab.Screen
-                name="İbadet"
-                component={IbadetStack}
+                name="Kur'an"
+                component={KuranStack}
                 options={{
-                    tabBarIcon: ({ focused }) => <TabIcon emoji="🕌" focused={focused} />,
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon IconComponent={QuranIcon} focused={focused} color={color} />
+                    ),
                 }}
             />
             <Tab.Screen
                 name="Araçlar"
                 component={AraclarStack}
                 options={{
-                    tabBarIcon: ({ focused }) => <TabIcon emoji="🛠️" focused={focused} />,
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon IconComponent={ToolsIcon} focused={focused} color={color} />
+                    ),
                 }}
             />
             <Tab.Screen
-                name="Daha"
+                name="Ayarlar"
                 component={DahaFazlaStack}
                 options={{
-                    tabBarLabel: 'Daha',
-                    tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+                    tabBarLabel: 'Ayarlar',
+                    tabBarIcon: ({ focused, color }) => (
+                        <TabIcon IconComponent={MoreIcon} focused={focused} color={color} />
+                    ),
                 }}
             />
         </Tab.Navigator>
@@ -271,11 +283,5 @@ const styles = StyleSheet.create({
     },
     tabIconContainerActive: {
         backgroundColor: 'rgba(218, 165, 32, 0.15)',
-    },
-    tabIcon: {
-        fontSize: 22,
-    },
-    tabIconActive: {
-        transform: [{ scale: 1.1 }],
     },
 });

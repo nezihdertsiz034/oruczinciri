@@ -38,7 +38,7 @@ async function createNotificationChannels() {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 500, 500, 500, 500, 500, 500, 500],
       lightColor: '#1a5f3f',
-      sound: 'yunus_emre', // Yunus Emre Ney sesi
+      sound: 'yunus_emre.mp3', // Dosya uzantısı ile birlikte
       enableVibrate: true,
       showBadge: true,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
@@ -52,7 +52,7 @@ async function createNotificationChannels() {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 500, 500, 500, 500, 500, 500, 500],
       lightColor: '#1a5f3f',
-      sound: 'ney',
+      sound: 'ney.mp3',
       enableVibrate: true,
       showBadge: true,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
@@ -191,13 +191,17 @@ async function scheduleNamazNotifications(sehirAdi: string, ayarlar: any) {
           content: {
             title: `🕌 ${vakit.isim} Namazı Vakti`,
             body: bildirimBody,
-            sound: 'yunus_emre', // Yunus Emre Ney sesi
+            sound: 'yunus_emre.mp3', // Dosya uzantısı ile birlikte
 
             data: {
               vakit: vakit.isim,
               ezanSesi: ayarlar.ezanSesiAktif ?? true,
             },
-            ...(Platform.OS === 'android' && { channelId: CHANNEL_NAMAZ }),
+            ...(Platform.OS === 'android' && {
+              channelId: CHANNEL_NAMAZ,
+              color: '#1a5f3f',
+              priority: Notifications.AndroidNotificationPriority.MAX,
+            }),
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -262,8 +266,12 @@ async function scheduleFastingNotifications(sehirAdi: string, ayarlar: any) {
             content: {
               title: '🌅 Sahur Hatırlatıcısı',
               body: `Sahur vaktiniz yaklaşıyor! İmsak: ${vakitler?.imsak || 'Bilinmiyor'}`,
-              sound: 'ney',
-              ...(Platform.OS === 'android' && { channelId: CHANNEL_HATIRLATICI }),
+              sound: 'ney.mp3',
+              ...(Platform.OS === 'android' && {
+                channelId: CHANNEL_HATIRLATICI,
+                color: '#1a5f3f',
+                priority: Notifications.AndroidNotificationPriority.MAX,
+              }),
             },
             trigger: {
               type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -301,8 +309,12 @@ async function scheduleFastingNotifications(sehirAdi: string, ayarlar: any) {
             content: {
               title: '🌇 İftar Hatırlatıcısı',
               body: `İftar vaktiniz yaklaşıyor! Akşam: ${vakitler?.aksam || 'Bilinmiyor'}`,
-              sound: 'ney',
-              ...(Platform.OS === 'android' && { channelId: CHANNEL_HATIRLATICI }),
+              sound: 'ney.mp3',
+              ...(Platform.OS === 'android' && {
+                channelId: CHANNEL_HATIRLATICI,
+                color: '#1a5f3f',
+                priority: Notifications.AndroidNotificationPriority.MAX,
+              }),
             },
             trigger: {
               type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -337,8 +349,12 @@ export async function sendTestNotification() {
       content: {
         title: '✅ Bildirimler Çalışıyor!',
         body: 'Şükür365 bildirimleri başarıyla ayarlandı.',
-        sound: 'ney',
-        ...(Platform.OS === 'android' && { channelId: CHANNEL_HATIRLATICI }),
+        sound: 'ney.mp3',
+        ...(Platform.OS === 'android' && {
+          channelId: CHANNEL_HATIRLATICI,
+          color: '#1a5f3f',
+          priority: Notifications.AndroidNotificationPriority.MAX,
+        }),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,

@@ -25,6 +25,8 @@ import { KURAN_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { BackgroundDecor } from '../components/BackgroundDecor';
 import { getSurahTurkishName } from '../utils/quranApi';
+import { yukleUygulamaAyarlari, kaydetUygulamaAyarlari } from '../utils/storage';
+import { UygulamaAyarlari } from '../types';
 
 export default function QuranScreen() {
     const {
@@ -45,6 +47,15 @@ export default function QuranScreen() {
     const [showSurahList, setShowSurahList] = useState(false);
     const [currentSurahIndex, setCurrentSurahIndex] = useState(0);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [uygulamaAyarlari, setUygulamaAyarlari] = useState<UygulamaAyarlari | null>(null);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            const settings = await yukleUygulamaAyarlari();
+            setUygulamaAyarlari(settings);
+        };
+        loadSettings();
+    }, []);
 
     /**
      * İlk yükleme - kaldığı yerden devam veya Fatiha'dan başla
@@ -160,6 +171,22 @@ export default function QuranScreen() {
     }, [currentSurah]);
 
     /**
+     * Yazı boyutunu hızlıca değiştir
+     */
+    const toggleFontSize = useCallback(async () => {
+        if (!uygulamaAyarlari) return;
+
+        const sizes: UygulamaAyarlari['yaziBoyutu'][] = ['kucuk', 'normal', 'buyuk', 'cokbuyuk', 'dev', 'yasli'];
+        const currentIndex = sizes.indexOf(uygulamaAyarlari.yaziBoyutu);
+        const nextIndex = (currentIndex + 1) % sizes.length;
+        const nextSize = sizes[nextIndex];
+
+        const yeniAyarlar = { ...uygulamaAyarlari, yaziBoyutu: nextSize };
+        setUygulamaAyarlari(yeniAyarlar);
+        await kaydetUygulamaAyarlari(yeniAyarlar);
+    }, [uygulamaAyarlari]);
+
+    /**
      * Sure listesi modal'ı
      */
     const renderSurahListModal = () => (
@@ -249,6 +276,9 @@ export default function QuranScreen() {
                 <Text style={styles.headerTitle}>Kur'an-ı Kerim</Text>
 
                 <View style={styles.headerRight}>
+                    <TouchableOpacity onPress={toggleFontSize} style={styles.fontSizeButton}>
+                        <Text style={styles.fontSizeButtonText}>A+</Text>
+                    </TouchableOpacity>
                     <Text style={styles.progressText}>
                         {currentSurahIndex + 1}/114
                     </Text>
@@ -268,6 +298,7 @@ export default function QuranScreen() {
                         onShare={handleShare}
                         bookmarkedAyahs={bookmarks.map(b => b.ayahNumber)}
                         favoriteAyahs={favorites}
+                        fontSize={uygulamaAyarlari?.yaziBoyutu}
                     />
 
                     {/* Loading Overlay - Sure değiştirirken */}
@@ -374,8 +405,21 @@ const styles = StyleSheet.create({
         fontFamily: TYPOGRAPHY.body,
     },
     headerRight: {
-        width: 80,
-        alignItems: 'flex-end',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    fontSizeButton: {
+        padding: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    fontSizeButtonText: {
+        color: KURAN_RENKLER.sureBaslik,
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     progressText: {
         fontSize: 14,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,10 @@ import {
   kaydetBildirimAyarlari,
   yukleSehir,
   kaydetSehir,
+  yukleUygulamaAyarlari,
+  kaydetUygulamaAyarlari,
 } from '../utils/storage';
-import { BildirimAyarlari, Sehir } from '../types';
+import { BildirimAyarlari, Sehir, UygulamaAyarlari } from '../types';
 import { SEHIRLER } from '../constants/sehirler';
 import { temizleOrucVerileri } from '../utils/orucStorage';
 import { SaatSecici } from '../components/SaatSecici';
@@ -59,6 +61,7 @@ export default function AyarlarScreen() {
   };
 
   const [bildirimAyarlari, setBildirimAyarlari] = useState<BildirimAyarlari | null>(null);
+  const [uygulamaAyarlari, setUygulamaAyarlari] = useState<UygulamaAyarlari | null>(null);
   const [sehir, setSehir] = useState<Sehir | null>(null);
   const [sehirModalVisible, setSehirModalVisible] = useState(false);
   const [sahurSaatModalVisible, setSahurSaatModalVisible] = useState(false);
@@ -73,12 +76,14 @@ export default function AyarlarScreen() {
   const verileriYukle = async () => {
     try {
       setYukleniyor(true);
-      const [ayarlar, sehirData] = await Promise.all([
+      const [ayarlar, sehirData, uygulamaAyar] = await Promise.all([
         yukleBildirimAyarlari(),
         yukleSehir(),
+        yukleUygulamaAyarlari(),
       ]);
       setBildirimAyarlari(ayarlar);
       setSehir(sehirData);
+      setUygulamaAyarlari(uygulamaAyar);
     } catch (error) {
       console.error('Ayarlar yüklenirken hata:', error);
     } finally {
@@ -88,7 +93,7 @@ export default function AyarlarScreen() {
 
   const handleBildirimAyarDegistir = async (
     key: keyof BildirimAyarlari,
-    value: boolean | string
+    value: boolean | string | number
   ) => {
     if (!bildirimAyarlari) return;
 
@@ -96,9 +101,28 @@ export default function AyarlarScreen() {
       const yeniAyarlar = { ...bildirimAyarlari, [key]: value };
       setBildirimAyarlari(yeniAyarlar);
       await kaydetBildirimAyarlari(yeniAyarlar);
+      await bildirimleriAyarla();
     } catch (error) {
+      console.error('Bildirim ayarı değiştirilemedi:', error);
       Alert.alert('Hata', 'Ayar kaydedilirken bir hata oluştu.');
-      await verileriYukle(); // Geri yükle
+      await verileriYukle();
+    }
+  };
+
+  const handleUygulamaAyarDegistir = async (
+    key: keyof UygulamaAyarlari,
+    value: any
+  ) => {
+    if (!uygulamaAyarlari) return;
+
+    try {
+      const yeniAyarlar = { ...uygulamaAyarlari, [key]: value };
+      setUygulamaAyarlari(yeniAyarlar);
+      await kaydetUygulamaAyarlari(yeniAyarlar);
+    } catch (error) {
+      console.error('Uygulama ayarı değiştirilemedi:', error);
+      Alert.alert('Hata', 'Ayar kaydedilirken bir hata oluştu.');
+      await verileriYukle();
     }
   };
 
@@ -107,7 +131,6 @@ export default function AyarlarScreen() {
       setSehir(seciliSehir);
       await kaydetSehir(seciliSehir);
       setSehirModalVisible(false);
-      // Şehir değiştiğinde bildirimleri yeniden ayarla
       await bildirimleriAyarla();
       Alert.alert('Başarılı', 'Şehir güncellendi. Namaz vakitleri otomatik olarak güncellenecek.');
     } catch (error) {
@@ -144,7 +167,7 @@ export default function AyarlarScreen() {
             try {
               await temizleOrucVerileri();
               Alert.alert('Başarılı', 'Tüm veriler sıfırlandı.');
-              // Diğer verileri de sıfırlamak için storage fonksiyonları eklenebilir
+              await verileriYukle();
             } catch (error) {
               Alert.alert('Hata', 'Veriler sıfırlanırken bir hata oluştu.');
             }
@@ -154,7 +177,7 @@ export default function AyarlarScreen() {
     );
   };
 
-  if (yukleniyor || !bildirimAyarlari || !sehir) {
+  if (yukleniyor || !bildirimAyarlari || !sehir || !uygulamaAyarlari) {
     return (
       <SafeAreaView style={styles.container}>
         <BackgroundDecor />
@@ -395,6 +418,217 @@ export default function AyarlarScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Widget Ayarları */}
+        <View style={styles.ayarBolumu}>
+          <Text style={styles.ayarBaslik}>📱 Widget Ayarları</Text>
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Ana Ekran Widget'ı</Text>
+              <Text style={styles.switchAltLabel}>
+                Namaz vakitlerini ana ekranınızda görün
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.widgetAktif}
+              onValueChange={(value) => handleUygulamaAyarDegistir('widgetAktif', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Kilidi Ekranı Widget'ı</Text>
+              <Text style={styles.switchAltLabel}>
+                Sonraki namaz vaktini kilit ekranında görün
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.widgetKilitEkraniAktif}
+              onValueChange={(value) => handleUygulamaAyarDegistir('widgetKilitEkraniAktif', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.ayarItem}
+            onPress={() => Alert.alert('Widget Rengi', 'Koyu veya açık tema seçebilirsiniz.', [
+              { text: 'Koyu Tema', onPress: () => handleUygulamaAyarDegistir('widgetTema', 'koyu') },
+              { text: 'Açık Tema', onPress: () => handleUygulamaAyarDegistir('widgetTema', 'acik') },
+              { text: 'İptal', style: 'cancel' }
+            ])}
+          >
+            <Text style={styles.ayarItemText}>Widget Teması</Text>
+            <Text style={styles.ayarItemValue}>{uygulamaAyarlari.widgetTema === 'koyu' ? 'Koyu' : 'Açık'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Görünüm ve Erişilebilirlik */}
+        <View style={styles.ayarBolumu}>
+          <Text style={styles.ayarBaslik}>👁️ Görünüm ve Erişilebilirlik</Text>
+
+          <View style={styles.bilgiKutusu}>
+            <Text style={styles.bilgiText}>
+              Aşağıdaki seçenek ile uygulama içindeki yazıların boyutunu kendinize en uygun şekilde ayarlayabilirsiniz.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.ayarItem, { height: 70 }]}
+            onPress={() => Alert.alert('Yazı Boyutu', 'Size en uygun okuma boyutunu seçin', [
+              { text: 'Küçük', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'kucuk') },
+              { text: 'Normal', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'normal') },
+              { text: 'Büyük', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'buyuk') },
+              { text: 'Çok Büyük', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'cokbuyuk') },
+              { text: 'Dev (En Büyük)', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'dev') },
+              { text: 'Yaşlı Modu', onPress: () => handleUygulamaAyarDegistir('yaziBoyutu', 'yasli') },
+              { text: 'İptal', style: 'cancel' }
+            ])}
+          >
+            <View>
+              <Text style={[styles.ayarItemText, { fontSize: 18 }]}>Yazı Boyutu</Text>
+              <Text style={styles.ayarItemValueAlt}>
+                Şu an: {
+                  uygulamaAyarlari.yaziBoyutu === 'kucuk' ? 'Küçük' :
+                    uygulamaAyarlari.yaziBoyutu === 'normal' ? 'Normal' :
+                      uygulamaAyarlari.yaziBoyutu === 'buyuk' ? 'Büyük' :
+                        uygulamaAyarlari.yaziBoyutu === 'cokbuyuk' ? 'Çok Büyük' :
+                          uygulamaAyarlari.yaziBoyutu === 'dev' ? 'Dev (En Büyük)' : 'Yaşlı Modu'
+                }
+              </Text>
+            </View>
+            <Text style={styles.ayarItemOk}>›</Text>
+          </TouchableOpacity>
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Arapça Yazı Göster</Text>
+              <Text style={styles.switchAltLabel}>
+                Sayaçlarda Arapça "الله" yazısı
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.arapcaYaziGoster}
+              onValueChange={(value) => handleUygulamaAyarDegistir('arapcaYaziGoster', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+        </View>
+
+
+        {/* Kıble Ayarları */}
+        <View style={styles.ayarBolumu}>
+          <Text style={styles.ayarBaslik}>🧭 Kıble Ayarları</Text>
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Kıble Titreşimi</Text>
+              <Text style={styles.switchAltLabel}>
+                Kıble yönüne hizalandığında titret
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.kibleTitresimAktif}
+              onValueChange={(value) => handleUygulamaAyarDegistir('kibleTitresimAktif', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.ayarItem}
+            onPress={() => Alert.alert('Pusula Kalibrasyonu', 'Telefonunuzu 8 şeklinde hareket ettirerek pusulanızı kalibre edin.')}
+          >
+            <Text style={styles.ayarItemText}>Pusulayı Kalibre Et</Text>
+            <Text style={styles.ayarItemOk}>›</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Uygulama Ayarları */}
+        <View style={styles.ayarBolumu}>
+          <Text style={styles.ayarBaslik}>⚙️ Uygulama Ayarları</Text>
+
+          <TouchableOpacity
+            style={styles.ayarItem}
+            onPress={() => Alert.alert('Dil Seçimi', 'Uygulama dilini seçin', [
+              { text: 'Türkçe', onPress: () => handleUygulamaAyarDegistir('dil', 'tr') },
+              { text: 'English', onPress: () => handleUygulamaAyarDegistir('dil', 'en') },
+              { text: 'العربية', onPress: () => handleUygulamaAyarDegistir('dil', 'ar') },
+              { text: 'İptal', style: 'cancel' }
+            ])}
+          >
+            <Text style={styles.ayarItemText}>Uygulama Dili</Text>
+            <Text style={styles.ayarItemValue}>{uygulamaAyarlari.dil === 'tr' ? 'Türkçe' : uygulamaAyarlari.dil === 'en' ? 'English' : 'العربية'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.ayarItem}
+            onPress={() => Alert.alert('Hesaplama Metodu', 'Namaz vakti hesaplama metodunu seçin', [
+              { text: 'Diyanet (Türkiye)', onPress: () => handleUygulamaAyarDegistir('hesaplamaMetodu', 'diyanet') },
+              { text: 'Ümm-ul Kura', onPress: () => handleUygulamaAyarDegistir('hesaplamaMetodu', 'umm-ul-kura') },
+              { text: 'ISNA', onPress: () => handleUygulamaAyarDegistir('hesaplamaMetodu', 'isna') },
+              { text: 'Muslim World League', onPress: () => handleUygulamaAyarDegistir('hesaplamaMetodu', 'mwl') },
+              { text: 'İptal', style: 'cancel' }
+            ])}
+          >
+            <Text style={styles.ayarItemText}>Hesaplama Metodu</Text>
+            <Text style={styles.ayarItemValue}>{uygulamaAyarlari.hesaplamaMetodu === 'diyanet' ? 'Diyanet' : uygulamaAyarlari.hesaplamaMetodu.toUpperCase()}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Otomatik Konum</Text>
+              <Text style={styles.switchAltLabel}>
+                Açılışta konumu otomatik algıla
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.otomatikKonum}
+              onValueChange={(value) => handleUygulamaAyarDegistir('otomatikKonum', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+
+
+          <View style={styles.switchItem}>
+            <View>
+              <Text style={styles.switchLabel}>Ekranı Açık Tut</Text>
+              <Text style={styles.switchAltLabel}>
+                Tesbih ve Kıble ekranlarında
+              </Text>
+            </View>
+            <Switch
+              value={uygulamaAyarlari.ekraniAcikTut}
+              onValueChange={(value) => handleUygulamaAyarDegistir('ekraniAcikTut', value)}
+              trackColor={{
+                false: 'rgba(255, 255, 255, 0.3)',
+                true: ISLAMI_RENKLER.altinOrta,
+              }}
+              thumbColor={ISLAMI_RENKLER.yaziBeyaz}
+            />
+          </View>
+        </View>
+
+
         {/* Hakkında */}
         <View style={styles.ayarBolumu}>
           <Text style={styles.ayarBaslik}>ℹ️ Hakkında</Text>
@@ -415,6 +649,7 @@ export default function AyarlarScreen() {
             Dualarınızı bekliyoruz. 🤲
           </Text>
         </View>
+
       </ScrollView>
 
       {/* Şehir Seçim Modal */}
@@ -688,5 +923,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: TYPOGRAPHY.body,
     textAlign: 'center',
+  },
+  ayarItemValue: {
+    color: ISLAMI_RENKLER.altinAcik,
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: TYPOGRAPHY.body,
+  },
+  ayarItemValueAlt: {
+    color: ISLAMI_RENKLER.altinAcik,
+    fontSize: 12,
+    marginTop: 2,
+    fontFamily: TYPOGRAPHY.body,
+  },
+  bilgiKutusu: {
+    backgroundColor: 'rgba(218, 165, 32, 0.1)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: ISLAMI_RENKLER.altinOrta,
+  },
+  bilgiText: {
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: TYPOGRAPHY.body,
   },
 });

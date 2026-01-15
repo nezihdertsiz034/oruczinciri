@@ -10,6 +10,7 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
@@ -24,6 +25,36 @@ export default function NotlarScreen() {
   const [seciliNot, setSeciliNot] = useState<Not | null>(null);
   const [baslik, setBaslik] = useState('');
   const [icerik, setIcerik] = useState('');
+
+  const route = useRoute<RouteProp<{ params: { date?: string } }, 'params'>>();
+
+  // Dışarıdan gelen tarih parametresini kontrol et
+  React.useEffect(() => {
+    if (route.params?.date && !yukleniyor) {
+      const hedefTarih = route.params.date;
+      const mevcutNot = notlar.find(n => n.tarih === hedefTarih);
+
+      if (mevcutNot) {
+        handleNotDuzenle(mevcutNot);
+      } else {
+        // Yeni not ekle modunda aç ve tarihi ayarla
+        setSeciliNot(null);
+        setBaslik('');
+        setIcerik('');
+        setModalVisible(true);
+        // Not kaydederken bu tarihi kullanması için geçici bir state veya 
+        // handleNotKaydet içinde tarih kontrolü gerekebilir.
+        // Mevcut handleNotKaydet zaten seciliNot?.tarih yoksa bugünü alıyor.
+        // Bu yüzden seciliNot'a sadece tarih içeren boş bir obje verelim.
+        setSeciliNot({
+          id: '',
+          tarih: hedefTarih,
+          icerik: '',
+          olusturmaTarihi: Date.now()
+        } as Not);
+      }
+    }
+  }, [route.params?.date, yukleniyor, notlar]);
 
   const handleNotEkle = () => {
     setSeciliNot(null);

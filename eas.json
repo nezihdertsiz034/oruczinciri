@@ -1,47 +1,44 @@
 {
-    "cli": {
-        "version": ">= 13.2.0"
+  "cli": {
+    "version": ">= 13.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "ios": {
+        "buildConfiguration": "Debug"
+      }
     },
-    "build": {
-        "development": {
-            "developmentClient": true,
-            "distribution": "internal",
-            "android": {
-                "gradleCommand": ":app:assembleDebug"
-            },
-            "ios": {
-                "buildConfiguration": "Debug"
-            }
-        },
-        "preview": {
-            "distribution": "internal",
-            "android": {
-                "buildType": "apk"
-            },
-            "ios": {
-                "simulator": true
-            }
-        },
-        "production": {
-            "android": {
-                "buildType": "app-bundle"
-            },
-            "ios": {
-                "autoIncrement": true
-            }
-        }
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
     },
-    "submit": {
-        "production": {
-            "android": {
-                "serviceAccountKeyPath": "./google-service-account.json",
-                "track": "internal"
-            },
-            "ios": {
-                "appleId": "YOUR_APPLE_ID@example.com",
-                "ascAppId": "YOUR_ASC_APP_ID",
-                "appleTeamId": "YOUR_TEAM_ID"
-            }
-        }
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "autoIncrement": true
+      }
     }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      },
+      "ios": {}
+    }
+  }
 }

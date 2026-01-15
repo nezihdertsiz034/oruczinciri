@@ -28,7 +28,7 @@ export async function ezanSesiCal(): Promise<void> {
 
     // Yerel ezan sesi dosyasını yükle
     const { sound: newSound } = await Audio.Sound.createAsync(
-      require('../../assets/ezan.mp3'),
+      require('../../assets/yunus_emre.mp3'),
       { shouldPlay: true, volume: 1.0 }
     );
 
@@ -84,7 +84,7 @@ export function bildirimEzanSesiBaslat(): void {
     const ezanSesi = notification.request.content.data?.ezanSesi;
 
     // Eğer bu bir namaz vakti bildirimi ve ezan sesi aktifse
-    if (ezanSesi && notification.request.content.title?.includes('Namazı')) {
+    if (ezanSesi && notification.request.content.title?.includes('Namazı Vakti')) {
       await ezanSesiCal();
     }
   });

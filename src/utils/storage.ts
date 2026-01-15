@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir, TesbihSayaciVeri, TesbihKaydi } from '../types';
+import { Not, Sadaka, Teravih, BildirimAyarlari, Sehir, TesbihSayaciVeri, TesbihKaydi, UygulamaAyarlari } from '../types';
 import { tarihToString } from './ramazanTarihleri';
 
 // Storage key'leri
@@ -10,8 +10,10 @@ const STORAGE_KEYS = {
   TESBIH_SAYACI: '@tesbih_sayaci',
   TESBIH_KAYITLARI: '@tesbih_kayitlari',
   BILDIRIM_AYARLARI: '@bildirim_ayarlari',
+  UYGULAMA_AYARLARI: '@uygulama_ayarlari',
   SEHIR: '@sehir',
 } as const;
+
 
 // ========== NOTLAR ==========
 
@@ -225,6 +227,69 @@ export async function kaydetBildirimAyarlari(ayarlar: BildirimAyarlari): Promise
     await AsyncStorage.setItem(STORAGE_KEYS.BILDIRIM_AYARLARI, JSON.stringify(ayarlar));
   } catch (error) {
     console.error('Bildirim ayarları kaydedilirken hata:', error);
+    throw error;
+  }
+}
+
+// ========== UYGULAMA AYARLARI ==========
+
+const VARSAYILAN_UYGULAMA_AYARLARI: UygulamaAyarlari = {
+  // Görünüm
+  yaziBoyutu: 'normal',
+  arapcaYaziGoster: true,
+  animasyonlarAktif: true,
+
+  // Tesbih
+  tesbihTitresimAktif: true,
+  tesbihSesAktif: true,
+  tesbihVarsayilanHedef: 33,
+
+  // Kıble
+  kibleTitresimAktif: true,
+
+  // Widget
+  widgetAktif: true,
+  widgetKilitEkraniAktif: false,
+  widgetTema: 'koyu',
+
+  // Uygulama
+  dil: 'tr',
+  hesaplamaMetodu: 'diyanet',
+  otomatikKonum: false,
+  ekraniAcikTut: true,
+
+  // Kişiselleştirme
+  kullaniciProfil: {
+    isim: '',
+    cinsiyet: 'belirtilmemis',
+    unvan: '',
+  },
+};
+
+/**
+ * Uygulama ayarlarını yükler
+ */
+export async function yukleUygulamaAyarlari(): Promise<UygulamaAyarlari> {
+  try {
+    const veri = await AsyncStorage.getItem(STORAGE_KEYS.UYGULAMA_AYARLARI);
+    if (veri) {
+      return { ...VARSAYILAN_UYGULAMA_AYARLARI, ...JSON.parse(veri) };
+    }
+    return VARSAYILAN_UYGULAMA_AYARLARI;
+  } catch (error) {
+    console.error('Uygulama ayarları yüklenirken hata:', error);
+    return VARSAYILAN_UYGULAMA_AYARLARI;
+  }
+}
+
+/**
+ * Uygulama ayarlarını kaydeder
+ */
+export async function kaydetUygulamaAyarlari(ayarlar: UygulamaAyarlari): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.UYGULAMA_AYARLARI, JSON.stringify(ayarlar));
+  } catch (error) {
+    console.error('Uygulama ayarları kaydedilirken hata:', error);
     throw error;
   }
 }

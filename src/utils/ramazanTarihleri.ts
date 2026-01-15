@@ -1,17 +1,17 @@
 /**
  * Ramazan 2026 tarihleri ve yardımcı fonksiyonlar
- * Ramazan 2026: 27 Şubat 2026 - 28 Mart 2026 (30 gün)
+ * Ramazan 2026: 18 Şubat 2026 - 19 Mart 2026 (30 gün)
  */
 
 /**
- * Ramazan 2026'nın tüm tarihlerini döndürür
+ * Ramazan 2026'nın tüm tarihleri döndürür
  * @returns Date[] - Ramazan günlerinin tarihleri
  */
 export function getRamazan2026Tarihleri(): Date[] {
   const tarihler: Date[] = [];
 
-  // Ramazan 2026 başlangıcı: 27 Şubat 2026
-  const baslangic = new Date(2026, 1, 27); // Ay 0-indexed (1 = Şubat)
+  // Ramazan 2026 başlangıcı tahmini: 18 Şubat 2026
+  const baslangic = new Date(2026, 1, 18); // Ay 0-indexed (1 = Şubat)
 
   // 30 gün Ramazan
   for (let i = 0; i < 30; i++) {
@@ -57,4 +57,3 @@ export function bugunRamazanMi(tarih: Date = new Date()): boolean {
 
   return ramazanTarihleri.some(rt => rt.toISOString().split('T')[0] === kontrolTarihStr);
 }
-

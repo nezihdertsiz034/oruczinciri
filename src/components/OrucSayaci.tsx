@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Animated, Dimensions } from 'react-native';
-import Svg, { Circle, Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Animated } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { NamazVakitleri } from '../types';
 import { saniyeToZaman } from '../utils/namazVakitleri';
 import { ISLAMI_RENKLER } from '../constants/renkler';
@@ -8,7 +8,8 @@ import { TYPOGRAPHY } from '../constants/typography';
 import { getSukurAyetiByGun, SukurAyeti } from '../constants/sukurAyetleri';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
 
-const { width } = Dimensions.get('window');
+
+
 
 interface OrucSayaciProps {
   vakitler: NamazVakitleri | null;
@@ -144,7 +145,6 @@ export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = f
   let progressYuzde = 0;
   if (durum === 'beklemede') {
     // Gece yarısından imsaka
-    const geceBaslangic = 0;
     progressYuzde = ((imsakToplam - kalanSure) / imsakToplam) * 100;
   } else if (durum === 'devam') {
     const toplamSure = aksamToplam - imsakToplam;

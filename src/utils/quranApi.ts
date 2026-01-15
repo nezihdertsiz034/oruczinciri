@@ -12,7 +12,6 @@ import { handleError } from './errorHandler';
 const API_BASE_URL = 'https://api.alquran.cloud/v1';
 const ARABIC_EDITION = 'quran-uthmani'; // Osmanlı hattı
 const TURKISH_EDITION = 'tr.diyanet';   // Diyanet İşleri meali
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 1 hafta
 
 /**
  * Tüm surelerin listesini getirir

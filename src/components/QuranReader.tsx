@@ -21,7 +21,7 @@ interface QuranReaderProps {
     onShare?: (ayahNumber: number) => void;
     bookmarkedAyahs?: number[];
     favoriteAyahs?: number[];
-    fontSize?: 'small' | 'medium' | 'large';
+    fontSize?: 'kucuk' | 'normal' | 'buyuk' | 'cokbuyuk' | 'dev' | 'yasli';
 }
 
 export function QuranReader({
@@ -34,17 +34,24 @@ export function QuranReader({
     onShare,
     bookmarkedAyahs = [],
     favoriteAyahs = [],
-    fontSize = 'medium',
+    fontSize = 'normal',
 }: QuranReaderProps) {
 
     const getFontSize = () => {
         switch (fontSize) {
-            case 'small':
-                return { arabic: 22, turkish: 14, ayahNumber: 12 };
-            case 'large':
-                return { arabic: 30, turkish: 18, ayahNumber: 14 };
+            case 'kucuk':
+                return { arabic: 22, turkish: 14, ayahNumber: 12, lineHeigh: 36 };
+            case 'buyuk':
+                return { arabic: 30, turkish: 18, ayahNumber: 14, lineHeigh: 48 };
+            case 'cokbuyuk':
+                return { arabic: 34, turkish: 22, ayahNumber: 16, lineHeigh: 54 };
+            case 'dev':
+                return { arabic: 42, turkish: 26, ayahNumber: 18, lineHeigh: 64 };
+            case 'yasli':
+                return { arabic: 50, turkish: 32, ayahNumber: 20, lineHeigh: 72 };
+            case 'normal':
             default:
-                return { arabic: 26, turkish: 16, ayahNumber: 13 };
+                return { arabic: 26, turkish: 16, ayahNumber: 13, lineHeigh: 42 };
         }
     };
 
@@ -77,7 +84,7 @@ export function QuranReader({
                 return (
                     <View key={arabicAyah.number} style={styles.ayahContainer}>
                         {/* Arapça Metin */}
-                        <Text style={[styles.arabicText, { fontSize: fonts.arabic }]}>
+                        <Text style={[styles.arabicText, { fontSize: fonts.arabic, lineHeight: fonts.lineHeigh }]}>
                             {arabicAyah.text}
                         </Text>
 

@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
+import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
 import { OrucTamamlamaModal } from './OrucTamamlamaModal';
 
-/**
- * Oruç zinciri görselleştirme bileşeni
- * Her halka bir günü temsil eder ve tıklanabilir
- */
 export const OrucZinciri: React.FC = () => {
   const { zincirHalkalari, yukleniyor, toplamIsaretli, gunuIsaretle } = useOrucZinciri();
   const [modalVisible, setModalVisible] = useState(false);
   const [secilenGun, setSecilenGun] = useState(1);
+
+  const yuzde = useMemo(() => {
+    if (zincirHalkalari.length === 0) return 0;
+    return Math.round((toplamIsaretli / zincirHalkalari.length) * 100);
+  }, [toplamIsaretli, zincirHalkalari.length]);
 
   if (yukleniyor) {
     return (
@@ -22,15 +24,11 @@ export const OrucZinciri: React.FC = () => {
     );
   }
 
-  if (zincirHalkalari.length === 0) {
-    return null;
-  }
+  if (zincirHalkalari.length === 0) return null;
 
   const handleHalkaPress = async (tarih: Date, isaretli: boolean, gunNumarasi: number) => {
     try {
       await gunuIsaretle(tarih, !isaretli);
-
-      // Sadece oruç tamamlandığında (işaretlendiğinde) modalı göster
       if (!isaretli) {
         setSecilenGun(gunNumarasi);
         setModalVisible(true);
@@ -40,7 +38,6 @@ export const OrucZinciri: React.FC = () => {
     }
   };
 
-  // Haftalara göre grupla (her hafta 7 gün)
   const haftalar: typeof zincirHalkalari[] = [];
   for (let i = 0; i < zincirHalkalari.length; i += 7) {
     haftalar.push(zincirHalkalari.slice(i, i + 7));
@@ -48,11 +45,21 @@ export const OrucZinciri: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.baslikContainer}>
-        <Text style={styles.baslik}>🔗 Şükür365</Text>
-        <Text style={styles.altBaslik}>
-          {toplamIsaretli} / {zincirHalkalari.length} gün tamamlandı
-        </Text>
+      {/* Header with Progress Bar */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.baslik}>🔗 Şükür365</Text>
+          <Text style={styles.progressText}>{toplamIsaretli} / {zincirHalkalari.length} Gün</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <View style={styles.percentCircle}>
+            <Text style={styles.percentText}>%{yuzde}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.progressBarBg}>
+        <View style={[styles.progressBarFill, { width: `${yuzde}%` }]} />
       </View>
 
       <ScrollView
@@ -61,28 +68,41 @@ export const OrucZinciri: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
       >
         {haftalar.map((hafta, haftaIndex) => (
-          <View key={haftaIndex} style={styles.haftaContainer}>
-            <Text style={styles.haftaBaslik}>{haftaIndex + 1}. Hafta</Text>
-            <View style={styles.halkalarContainer}>
+          <View key={haftaIndex} style={styles.haftaGroup}>
+            <Text style={styles.haftaLabel}>{haftaIndex + 1}. HAFTA</Text>
+            <View style={styles.chainRow}>
               {hafta.map((halka, index) => {
                 const globalIndex = haftaIndex * 7 + index;
-                const halkaStyle = [
-                  styles.halka,
-                  halka.isaretli && styles.halkaIsaretli,
-                  halka.bugunMu && styles.halkaBugun,
-                ];
+                const isFirst = index === 0;
 
                 return (
-                  <TouchableOpacity
-                    key={globalIndex}
-                    style={halkaStyle}
-                    onPress={() => handleHalkaPress(halka.tarih, halka.isaretli, halka.gunNumarasi)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.halkaNumara}>{halka.gunNumarasi}</Text>
-                    {halka.isaretli && <Text style={styles.halkaIsaret}>✓</Text>}
-                    {halka.bugunMu && <View style={styles.bugunGostergesi} />}
-                  </TouchableOpacity>
+                  <View key={globalIndex} style={styles.linkWrapper}>
+                    {/* Horizontal Connector Line */}
+                    {!isFirst && (
+                      <View style={[
+                        styles.connector,
+                        halka.isaretli && hafta[index - 1]?.isaretli && styles.connectorActive
+                      ]} />
+                    )}
+
+                    <TouchableOpacity
+                      style={[
+                        styles.link,
+                        halka.isaretli && styles.linkCompleted,
+                        halka.bugunMu && styles.linkToday,
+                      ]}
+                      onPress={() => handleHalkaPress(halka.tarih, halka.isaretli, halka.gunNumarasi)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[
+                        styles.linkText,
+                        halka.isaretli && styles.linkTextCompleted
+                      ]}>
+                        {halka.gunNumarasi}
+                      </Text>
+                      {halka.isaretli && <Text style={styles.checkMark}>✓</Text>}
+                    </TouchableOpacity>
+                  </View>
                 );
               })}
             </View>
@@ -90,27 +110,25 @@ export const OrucZinciri: React.FC = () => {
         ))}
       </ScrollView>
 
-      <View style={styles.aciklamaContainer}>
-        <View style={styles.legenda}>
-          <View style={styles.legendaItem}>
-            <View style={[styles.legendaKutu, styles.legendaBos]} />
-            <Text style={styles.legendaText}>Bekleyen</Text>
+      {/* Modern Legend */}
+      <View style={styles.footer}>
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={styles.dotPending} />
+            <Text style={styles.legendLabel}>Bekliyor</Text>
           </View>
-          <View style={styles.legendaItem}>
-            <View style={[styles.legendaKutu, styles.legendaIsaretli]} />
-            <Text style={styles.legendaText}>Tamamlandı</Text>
+          <View style={styles.legendItem}>
+            <View style={styles.dotCompleted} />
+            <Text style={styles.legendLabel}>Şükür</Text>
           </View>
-          <View style={styles.legendaItem}>
-            <View style={[styles.legendaKutu, styles.legendaBugun]} />
-            <Text style={styles.legendaText}>Bugün</Text>
+          <View style={styles.legendItem}>
+            <View style={styles.dotToday} />
+            <Text style={styles.legendLabel}>Bugün</Text>
           </View>
         </View>
-        <Text style={styles.aciklamaText}>
-          💡 Halkalara dokunarak oruç günlerinizi işaretleyebilirsiniz
-        </Text>
+        <Text style={styles.hintText}>* Halkaları birleştirerek zinciri tamamlama vakti!</Text>
       </View>
 
-      {/* Oruç Tamamlama Modalı */}
       <OrucTamamlamaModal
         visible={modalVisible}
         gunNumarasi={secilenGun}
@@ -122,143 +140,197 @@ export const OrucZinciri: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: ISLAMI_RENKLER.glassBackground,
-    borderRadius: 28,
+    backgroundColor: 'rgba(25, 60, 45, 0.45)',
+    borderRadius: 30,
     margin: 16,
-    marginTop: 8,
-    padding: 20,
+    padding: 24,
     borderWidth: 1,
-    borderColor: ISLAMI_RENKLER.glassBorder,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 8,
   },
-  baslikContainer: {
-    marginBottom: 20,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flex: 1,
   },
   baslik: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    marginBottom: 8,
-    letterSpacing: 0.5,
+    fontFamily: TYPOGRAPHY.display,
   },
-  altBaslik: {
-    fontSize: 16,
-    color: ISLAMI_RENKLER.yaziBeyazYumusak,
-    fontWeight: '600',
-  },
-  scrollContent: {
-    paddingHorizontal: 8,
-  },
-  haftaContainer: {
-    marginRight: 20,
-    alignItems: 'center',
-  },
-  haftaBaslik: {
-    fontSize: 14,
-    fontWeight: '700',
+  progressText: {
+    fontSize: 13,
     color: ISLAMI_RENKLER.altinAcik,
-    marginBottom: 12,
+    fontWeight: '600',
+    marginTop: 4,
   },
-  halkalarContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  headerRight: {
+    marginLeft: 15,
   },
-  halka: {
+  percentCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    alignItems: 'center',
+    backgroundColor: 'rgba(218, 165, 32, 0.15)',
     justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(218, 165, 32, 0.3)',
+  },
+  percentText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: ISLAMI_RENKLER.altinAcik,
+  },
+  progressBarBg: {
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 3,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: ISLAMI_RENKLER.altinOrta,
+    borderRadius: 3,
+  },
+  scrollContent: {
+    paddingRight: 20,
+  },
+  haftaGroup: {
+    marginRight: 24,
+  },
+  haftaLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    marginBottom: 12,
+    opacity: 0.6,
+    letterSpacing: 1,
+  },
+  chainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  linkWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     position: 'relative',
   },
-  halkaIsaretli: {
-    backgroundColor: ISLAMI_RENKLER.altinOrta + '40',
+  connector: {
+    width: 14,
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    marginHorizontal: -1,
+  },
+  connectorActive: {
+    backgroundColor: ISLAMI_RENKLER.altinOrta,
+  },
+  link: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  linkCompleted: {
+    backgroundColor: ISLAMI_RENKLER.altinOrta + '30',
     borderColor: ISLAMI_RENKLER.altinAcik,
-    borderWidth: 2.5,
+    transform: [{ scale: 1.05 }],
   },
-  halkaBugun: {
-    borderColor: ISLAMI_RENKLER.yesilOrta,
+  linkToday: {
+    borderColor: ISLAMI_RENKLER.yesilAcik,
     borderWidth: 3,
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
   },
-  halkaNumara: {
-    fontSize: 14,
+  linkText: {
+    fontSize: 13,
     fontWeight: '700',
-    color: ISLAMI_RENKLER.yaziBeyaz,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
   },
-  halkaIsaret: {
+  linkTextCompleted: {
+    color: ISLAMI_RENKLER.altinAcik,
+    fontSize: 11,
+    opacity: 0, // Markayı göstermek için numarayı gizleyebiliriz veya üstüne koyabiliriz
+  },
+  checkMark: {
     position: 'absolute',
     fontSize: 18,
     color: ISLAMI_RENKLER.altinAcik,
-    fontWeight: '800',
+    fontWeight: '900',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowRadius: 4,
   },
-  bugunGostergesi: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: ISLAMI_RENKLER.yesilOrta,
-    borderWidth: 2,
-    borderColor: ISLAMI_RENKLER.arkaPlanYesil,
-  },
-  aciklamaContainer: {
-    marginTop: 20,
+  footer: {
+    marginTop: 24,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
-  legenda: {
+  legend: {
     flexDirection: 'row',
     justifyContent: 'center',
+    gap: 20,
     marginBottom: 12,
-    gap: 16,
   },
-  legendaItem: {
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  legendaKutu: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.5,
+  dotPending: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  legendaBos: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+  dotCompleted: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: ISLAMI_RENKLER.altinAcik,
   },
-  legendaIsaretli: {
-    backgroundColor: ISLAMI_RENKLER.altinOrta + '40',
-    borderColor: ISLAMI_RENKLER.altinAcik,
+  dotToday: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: ISLAMI_RENKLER.yesilAcik,
   },
-  legendaBugun: {
-    backgroundColor: 'transparent',
-    borderColor: ISLAMI_RENKLER.yesilOrta,
-  },
-  legendaText: {
+  legendLabel: {
     fontSize: 12,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
-    fontWeight: '500',
+    fontWeight: '600',
+    opacity: 0.8,
   },
-  aciklamaText: {
-    fontSize: 13,
+  hintText: {
+    fontSize: 11,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
     textAlign: 'center',
     fontStyle: 'italic',
+    opacity: 0.5,
   },
   yukleniyorText: {
     marginTop: 8,
     fontSize: 14,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    textAlign: 'center',
   },
 });
+

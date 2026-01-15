@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing, Dimensions } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Svg, { Circle, Line, Path, Defs, LinearGradient, Stop, G, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { KibleYonu as KibleYonuType } from '../types';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
+import { UygulamaAyarlari } from '../types';
+import { yukleUygulamaAyarlari } from '../utils/storage';
 
 const { width: EKRAN_GENISLIK } = Dimensions.get('window');
 const PUSULA_BOYUT = Math.min(EKRAN_GENISLIK * 0.85, 320);
@@ -29,7 +31,12 @@ export const KibleYonu: React.FC<KibleYonuProps> = ({
 }) => {
   const [sonTitresimZamani, setSonTitresimZamani] = useState(0);
   const [hizalandi, setHizalandi] = useState(false);
+  const [uygulamaAyarlari, setUygulamaAyarlari] = useState<UygulamaAyarlari | null>(null);
   const parlamaAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    yukleUygulamaAyarlari().then(setUygulamaAyarlari);
+  }, []);
 
   const yonIsimleri: Record<KibleYonuType['yon'], string> = {
     K: 'Kuzey',
@@ -53,7 +60,7 @@ export const KibleYonu: React.FC<KibleYonuProps> = ({
 
       // Titreşim (1 saniyede bir)
       const simdi = Date.now();
-      if (simdi - sonTitresimZamani > 1000) {
+      if (simdi - sonTitresimZamani > 1000 && uygulamaAyarlari?.kibleTitresimAktif !== false) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setSonTitresimZamani(simdi);
       }

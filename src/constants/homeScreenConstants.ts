@@ -32,7 +32,7 @@ export const HIZLI_ERISIM_1 = [
 
 // Hızlı erişim kartları - Satır 2 (4 adet) 
 export const HIZLI_ERISIM_2 = [
-    { id: 'peygamber', baslik: 'Hz. Muhammed', ikon: '🌙', tab: 'İbadet', screen: 'PeygamberHayati', renk: '#98FB98' },
+    { id: 'peygamber', baslik: 'Hz. Muhammed (S.A.V.)', ikon: '🌙', tab: 'İbadet', screen: 'PeygamberHayati', renk: '#98FB98' },
     { id: 'kuran', baslik: 'Kur\'an-ı Kerim', ikon: '📖', tab: 'İbadet', screen: 'KuranKerim', renk: '#2C5F2D' },
     { id: 'zekat', baslik: 'Zekat', ikon: '💰', tab: 'Araçlar', screen: 'Zekat', renk: '#F0E68C' },
     { id: 'istatistik', baslik: 'İstatistikler', ikon: '📊', tab: 'Takip', screen: 'IstatistiklerMain', renk: '#B0C4DE' },

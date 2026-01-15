@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,10 @@ import {
   yukleTesbihKayitlari,
   kaydetTesbihKaydi,
   silTesbihKaydi,
+  yukleUygulamaAyarlari,
+  kaydetUygulamaAyarlari,
 } from '../utils/storage';
-import { TesbihKaydi } from '../types';
+import { TesbihKaydi, UygulamaAyarlari } from '../types';
 
 const HIZLI_HEDEFLER = [33, 99, 100];
 const { width: EKRAN_GENISLIK } = Dimensions.get('window');
@@ -98,8 +100,7 @@ export default function TesbihScreen() {
   const [kayitlarGoster, setKayitlarGoster] = useState(false);
 
   // Ayarlar
-  const [titresimAktif, setTitresimAktif] = useState(true);
-  const [sesAktif, setSesAktif] = useState(true);
+  const [uygulamaAyarlari, setUygulamaAyarlari] = useState<UygulamaAyarlari | null>(null);
   const [ayarlarGoster, setAyarlarGoster] = useState(false);
 
   // Animasyon
@@ -110,13 +111,18 @@ export default function TesbihScreen() {
     let aktif = true;
 
     const yukleVeri = async () => {
-      const veri = await yukleTesbihSayaci();
-      const kayitlarVeri = await yukleTesbihKayitlari();
+      const [veri, kayitlarVeri, ayarVeri] = await Promise.all([
+        yukleTesbihSayaci(),
+        yukleTesbihKayitlari(),
+        yukleUygulamaAyarlari(),
+      ]);
+
       if (!aktif) return;
       setSayac(veri.sayac);
-      setHedef(veri.hedef);
-      setHedefInput(String(veri.hedef));
+      setHedef(ayarVeri.tesbihVarsayilanHedef || veri.hedef);
+      setHedefInput(String(ayarVeri.tesbihVarsayilanHedef || veri.hedef));
       setKayitlar(kayitlarVeri);
+      setUygulamaAyarlari(ayarVeri);
       setYukleniyor(false);
     };
 
@@ -144,7 +150,7 @@ export default function TesbihScreen() {
   };
 
   const sesCal = async () => {
-    if (sesAktif && soundRef.current) {
+    if (uygulamaAyarlari?.tesbihSesAktif && soundRef.current) {
       try {
         await soundRef.current.setPositionAsync(0);
         await soundRef.current.playAsync();
@@ -173,7 +179,7 @@ export default function TesbihScreen() {
 
   const handleArtir = async () => {
     // Titreşim
-    if (titresimAktif) {
+    if (uygulamaAyarlari?.tesbihTitresimAktif) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
@@ -193,7 +199,7 @@ export default function TesbihScreen() {
   };
 
   const handleAzalt = () => {
-    if (titresimAktif) {
+    if (uygulamaAyarlari?.tesbihTitresimAktif) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setSayac((onceki) => Math.max(0, onceki - 1));
@@ -222,7 +228,7 @@ export default function TesbihScreen() {
       setHedef(sifirlanmis.hedef);
       setHedefInput(String(sifirlanmis.hedef));
 
-      if (titresimAktif) {
+      if (uygulamaAyarlari?.tesbihTitresimAktif) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
 
@@ -249,7 +255,7 @@ export default function TesbihScreen() {
             setSayac(sifirlanmis.sayac);
             setHedef(sifirlanmis.hedef);
             setHedefInput(String(sifirlanmis.hedef));
-            if (titresimAktif) {
+            if (uygulamaAyarlari?.tesbihTitresimAktif) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
             }
           },
@@ -303,6 +309,13 @@ export default function TesbihScreen() {
     const saat = tarih.getHours().toString().padStart(2, '0');
     const dakika = tarih.getMinutes().toString().padStart(2, '0');
     return `${gun}.${ay}.${yil} ${saat}:${dakika}`;
+  };
+
+  const handleGlobalAyarDegistir = async (key: keyof UygulamaAyarlari, value: any) => {
+    if (!uygulamaAyarlari) return;
+    const yeniAyarlar = { ...uygulamaAyarlari, [key]: value };
+    setUygulamaAyarlari(yeniAyarlar);
+    await kaydetUygulamaAyarlari(yeniAyarlar);
   };
 
   const ilerlemeYuzde = hedef > 0 ? Math.min(100, (sayac / hedef) * 100) : 0;
@@ -406,27 +419,27 @@ export default function TesbihScreen() {
         </View>
 
         {/* Ayarlar Paneli */}
-        {ayarlarGoster && (
+        {ayarlarGoster && uygulamaAyarlari && (
           <View style={styles.ayarlarKart}>
             <Text style={styles.bolumBaslik}>⚙️ Ayarlar</Text>
 
             <View style={styles.ayarSatir}>
               <Text style={styles.ayarLabel}>📳 Titreşim</Text>
               <Switch
-                value={titresimAktif}
-                onValueChange={setTitresimAktif}
+                value={uygulamaAyarlari.tesbihTitresimAktif}
+                onValueChange={(value) => handleGlobalAyarDegistir('tesbihTitresimAktif', value)}
                 trackColor={{ false: 'rgba(255,255,255,0.2)', true: ISLAMI_RENKLER.altinOrta }}
-                thumbColor={titresimAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
+                thumbColor={uygulamaAyarlari.tesbihTitresimAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
               />
             </View>
 
             <View style={styles.ayarSatir}>
               <Text style={styles.ayarLabel}>🔊 Ses</Text>
               <Switch
-                value={sesAktif}
-                onValueChange={setSesAktif}
+                value={uygulamaAyarlari.tesbihSesAktif}
+                onValueChange={(value) => handleGlobalAyarDegistir('tesbihSesAktif', value)}
                 trackColor={{ false: 'rgba(255,255,255,0.2)', true: ISLAMI_RENKLER.altinOrta }}
-                thumbColor={sesAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
+                thumbColor={uygulamaAyarlari.tesbihSesAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
               />
             </View>
           </View>

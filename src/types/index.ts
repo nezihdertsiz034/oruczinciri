@@ -28,6 +28,13 @@ export interface ZincirHalkasi {
   bugunMu: boolean;
 }
 
+// Kullanıcı Profili
+export interface KullaniciProfili {
+  isim: string;
+  cinsiyet: 'erkek' | 'kadin' | 'belirtilmemis';
+  unvan: string; // Bey, Hanım veya boş
+}
+
 // İstatistikler
 export interface Istatistikler {
   toplamOruc: number;
@@ -51,6 +58,37 @@ export interface BildirimAyarlari {
   suIcmeAraligi: number; // Dakika cinsinden (örn: 30 = her 30 dakikada bir)
   ezanSesiAktif: boolean; // Ezan sesi çalınsın mı
 }
+
+// Uygulama Ayarları
+export interface UygulamaAyarlari {
+  // Görünüm
+  yaziBoyutu: 'kucuk' | 'normal' | 'buyuk' | 'cokbuyuk' | 'dev' | 'yasli';
+  arapcaYaziGoster: boolean;
+  animasyonlarAktif: boolean;
+
+  // Tesbih
+  tesbihTitresimAktif: boolean;
+  tesbihSesAktif: boolean;
+  tesbihVarsayilanHedef: number;
+
+  // Kıble
+  kibleTitresimAktif: boolean;
+
+  // Widget
+  widgetAktif: boolean;
+  widgetKilitEkraniAktif: boolean;
+  widgetTema: 'koyu' | 'acik';
+
+  // Uygulama
+  dil: 'tr' | 'en' | 'ar';
+  hesaplamaMetodu: 'diyanet' | 'umm-ul-kura' | 'isna' | 'mwl';
+  otomatikKonum: boolean;
+  ekraniAcikTut: boolean;
+
+  // Kişiselleştirme
+  kullaniciProfil: KullaniciProfili;
+}
+
 
 // Dua
 export interface Dua {

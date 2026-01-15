@@ -55,6 +55,22 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retries: n
 
 
 /**
+ * Şehir isimlerini Aladhan API uyumlu hale getirir (İngilizce karakterlere çevirir)
+ */
+function normalizeSehirAdi(sehirAdi: string): string {
+  const mapping: { [key: string]: string } = {
+    'İ': 'I', 'ı': 'i',
+    'Ş': 'S', 'ş': 's',
+    'Ğ': 'G', 'ğ': 'g',
+    'Ç': 'C', 'ç': 'c',
+    'Ü': 'U', 'ü': 'u',
+    'Ö': 'O', 'ö': 'o'
+  };
+
+  return sehirAdi.replace(/[İıŞşĞğÇçÜüÖö]/g, char => mapping[char] || char);
+}
+
+/**
  * Aladhan API'den belirli bir tarih için namaz vakitlerini çeker
  */
 async function getAladhanTarihNamazVakitleri(
@@ -62,10 +78,11 @@ async function getAladhanTarihNamazVakitleri(
   tarih: Date
 ): Promise<NamazVakitleri | null> {
   try {
+    const apiSehirAdi = normalizeSehirAdi(sehirAdi);
     const yil = tarih.getFullYear();
     const ay = tarih.getMonth() + 1;
 
-    const apiUrl = `https://api.aladhan.com/v1/calendarByCity?city=${encodeURIComponent(sehirAdi)}&country=Turkey&method=13&year=${yil}&month=${ay}`;
+    const apiUrl = `https://api.aladhan.com/v1/calendarByCity?city=${encodeURIComponent(apiSehirAdi)}&country=Turkey&method=13&year=${yil}&month=${ay}`;
 
     const response = await fetchWithRetry(apiUrl, {
       method: 'GET',
@@ -187,15 +204,16 @@ async function getAladhanNamazVakitleri(
   sehirAdi: string
 ): Promise<NamazVakitleri | null> {
   try {
+    const apiSehirAdi = normalizeSehirAdi(sehirAdi);
     const bugun = new Date();
     const yil = bugun.getFullYear();
     const ay = bugun.getMonth() + 1;
 
     // API endpoint: /v1/calendarByCity
     // method=13 = Diyanet İşleri Başkanlığı
-    const apiUrl = `https://api.aladhan.com/v1/calendarByCity?city=${encodeURIComponent(sehirAdi)}&country=Turkey&method=13&year=${yil}&month=${ay}`;
+    const apiUrl = `https://api.aladhan.com/v1/calendarByCity?city=${encodeURIComponent(apiSehirAdi)}&country=Turkey&method=13&year=${yil}&month=${ay}`;
 
-    console.log(`[Aladhan API] Vakitler çekiliyor: ${sehirAdi}`);
+    console.log(`[Aladhan API] Vakitler çekiliyor: ${apiSehirAdi} (Orijinal: ${sehirAdi})`);
 
     const response = await fetchWithRetry(apiUrl, {
       method: 'GET',

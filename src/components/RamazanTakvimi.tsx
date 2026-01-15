@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
+import { getRamazan2026Tarihleri } from '../utils/ramazanTarihleri';
 
-const { width } = Dimensions.get('window');
-const CELL_SIZE = (width - 64) / 7; // 7 gün için
+// Hücre boyutları - Yüzde bazlı genişlik ve sabit yükseklik ile hizalamayı garanti altına alıyoruz
+const CELL_WIDTH = '14.28%';
+const CELL_HEIGHT = 46;
 
 interface RamazanTakvimiProps {
     onGunSec?: (tarih: Date) => void;
@@ -19,21 +21,14 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
     const { zincirHalkalari, toplamIsaretli } = useOrucZinciri();
 
     // Ramazan başlangıç ve bitiş tarihlerini hesapla (örnek: 2026 Ramazan)
+    // Ramazan başlangıç ve bitiş tarihlerini hesapla
     const ramazanGunleri = useMemo(() => {
-        // 2026 Ramazan tahmini: 18 Şubat - 19 Mart
-        const ramazanBaslangic = new Date(2026, 1, 18); // Şubat = 1
+        const tarihler = getRamazan2026Tarihleri();
         const bugun = new Date();
         bugun.setHours(0, 0, 0, 0);
 
-        const gunler: { tarih: Date; gunNo: number; orucTutuldu: boolean; bugunMu: boolean }[] = [];
-
-        for (let i = 0; i < 30; i++) {
-            const tarih = new Date(ramazanBaslangic);
-            tarih.setDate(ramazanBaslangic.getDate() + i);
-            tarih.setHours(0, 0, 0, 0);
-
+        return tarihler.map((tarih, index) => {
             const bugunMu = tarih.getTime() === bugun.getTime();
-
 
             // Oruç tutulup tutulmadığını kontrol et
             const halka = zincirHalkalari.find(h => {
@@ -42,15 +37,13 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                 return hTarih.getTime() === tarih.getTime();
             });
 
-            gunler.push({
+            return {
                 tarih,
-                gunNo: i + 1,
+                gunNo: index + 1,
                 orucTutuldu: halka?.isaretli ?? false,
                 bugunMu,
-            });
-        }
-
-        return gunler;
+            };
+        });
     }, [zincirHalkalari]);
 
     // Hafta günleri başlıkları
@@ -68,12 +61,14 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
             {/* Başlık */}
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
-                    <Text style={styles.headerEmoji}>📅</Text>
+                    <View style={styles.calendarIcon}>
+                        <Text style={styles.headerEmoji}>🌙</Text>
+                    </View>
                     <Text style={styles.headerTitle}>Ramazan Takvimi</Text>
                 </View>
                 <View style={styles.headerRight}>
                     <Text style={styles.orucSayisi}>{toplamIsaretli}/30</Text>
-                    <Text style={styles.orucLabel}>oruç</Text>
+                    <Text style={styles.orucLabel}>tamamlandı</Text>
                 </View>
             </View>
 
@@ -122,12 +117,12 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
             {/* Açıklama */}
             <View style={styles.aciklama}>
                 <View style={styles.aciklamaItem}>
-                    <View style={[styles.ornek, styles.ornekBugün]} />
+                    <View style={styles.ornekBugün} />
                     <Text style={styles.aciklamaText}>Bugün</Text>
                 </View>
                 <View style={styles.aciklamaItem}>
-                    <View style={[styles.ornek, styles.ornekOruc]} />
-                    <Text style={styles.aciklamaText}>Oruç tutuldu</Text>
+                    <View style={styles.ornekOruc} />
+                    <Text style={styles.aciklamaText}>Tutuldu</Text>
                 </View>
             </View>
         </View>
@@ -148,15 +143,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
     },
+    calendarIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        backgroundColor: 'rgba(218, 165, 32, 0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
     headerEmoji: {
-        fontSize: 22,
-        marginRight: 10,
+        fontSize: 18,
     },
     headerTitle: {
         fontSize: 18,
@@ -172,53 +175,60 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         color: ISLAMI_RENKLER.altinAcik,
         fontFamily: TYPOGRAPHY.display,
+        lineHeight: 22,
     },
     orucLabel: {
-        fontSize: 11,
+        fontSize: 10,
         color: ISLAMI_RENKLER.yaziBeyazYumusak,
         fontFamily: TYPOGRAPHY.body,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
-    // Hafta başlıkları
     haftaBasliklari: {
         flexDirection: 'row',
-        marginBottom: 8,
+        marginBottom: 12,
+        justifyContent: 'space-between',
     },
     haftaGunuBaslik: {
-        width: CELL_SIZE,
+        width: CELL_WIDTH,
         textAlign: 'center',
-        fontSize: 11,
-        fontWeight: '600',
-        color: ISLAMI_RENKLER.yaziBeyazYumusak,
+        fontSize: 12,
+        fontWeight: '700',
+        color: ISLAMI_RENKLER.altinOrta,
         fontFamily: TYPOGRAPHY.body,
+        opacity: 0.8,
     },
-    // Grid
     takvimGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        width: '100%',
     },
     bosHucre: {
-        width: CELL_SIZE,
-        height: CELL_SIZE,
+        width: CELL_WIDTH,
+        height: CELL_HEIGHT,
+        marginBottom: 6,
     },
     gunHucre: {
-        width: CELL_SIZE,
-        height: CELL_SIZE,
+        width: CELL_WIDTH,
+        height: CELL_HEIGHT,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 4,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 12,
+        marginBottom: 6,
+        backgroundColor: 'rgba(255, 255, 255, 0.04)',
     },
     bugunHucre: {
-        backgroundColor: 'rgba(218, 165, 32, 0.25)',
-        borderWidth: 2,
+        backgroundColor: 'rgba(218, 165, 32, 0.2)',
+        borderWidth: 1.5,
         borderColor: ISLAMI_RENKLER.altinOrta,
     },
     orucTutulduHucre: {
-        backgroundColor: 'rgba(46, 204, 113, 0.25)',
+        backgroundColor: 'rgba(46, 204, 113, 0.15)',
+        borderWidth: 1,
+        borderColor: 'rgba(46, 204, 113, 0.3)',
     },
     gunNumara: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '600',
         color: ISLAMI_RENKLER.yaziBeyaz,
         fontFamily: TYPOGRAPHY.body,
@@ -233,39 +243,42 @@ const styles = StyleSheet.create({
     orucIsareti: {
         position: 'absolute',
         bottom: 2,
-        right: 2,
+        right: 4,
     },
     orucEmoji: {
         fontSize: 10,
         color: '#2ecc71',
     },
-    // Açıklama
     aciklama: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 16,
+        marginTop: 14,
         paddingTop: 12,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255, 255, 255, 0.1)',
+        borderTopColor: 'rgba(255, 255, 255, 0.08)',
     },
     aciklamaItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: 12,
-    },
-    ornek: {
-        width: 16,
-        height: 16,
-        borderRadius: 4,
-        marginRight: 6,
+        marginHorizontal: 10,
     },
     ornekBugün: {
-        backgroundColor: 'rgba(218, 165, 32, 0.25)',
-        borderWidth: 2,
+        width: 10,
+        height: 10,
+        borderRadius: 3,
+        backgroundColor: 'rgba(218, 165, 32, 0.2)',
+        borderWidth: 1,
         borderColor: ISLAMI_RENKLER.altinOrta,
+        marginRight: 6,
     },
     ornekOruc: {
-        backgroundColor: 'rgba(46, 204, 113, 0.25)',
+        width: 10,
+        height: 10,
+        borderRadius: 3,
+        backgroundColor: 'rgba(46, 204, 113, 0.15)',
+        borderWidth: 1,
+        borderColor: 'rgba(46, 204, 113, 0.3)',
+        marginRight: 6,
     },
     aciklamaText: {
         fontSize: 11,
