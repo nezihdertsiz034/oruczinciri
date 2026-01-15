@@ -51,19 +51,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Oruç Sayacı */}
-        <OrucSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
-
-        {/* Sonraki Namaz Sayacı - Tüm 6 vakit + geri sayım */}
-        <SonrakiNamazSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
-
-        {/* Ramazan Takvimi - 30 günlük grid */}
-        <RamazanTakvimi />
-
-        {/* Oruç Zinciri - Sayacın hemen altında */}
-        <OrucZinciri />
-
-        {/* Hızlı Erişim Kartları */}
+        {/* Hızlı Erişim Kartları - EN ÜSTTE */}
         <View style={styles.hizliErisimContainer}>
           <Text style={styles.bolumBaslik}>⚡ Hızlı Erişim</Text>
           {/* Satır 1 */}
@@ -99,6 +87,18 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
+
+        {/* Oruç Sayacı - Hızlı Erişimin Altında */}
+        <OrucSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
+
+        {/* Sonraki Namaz Sayacı - Tüm 6 vakit + geri sayım */}
+        <SonrakiNamazSayaci vakitler={vakitler} yukleniyor={yukleniyor} />
+
+        {/* Ramazan Takvimi - 30 günlük grid */}
+        <RamazanTakvimi />
+
+        {/* Oruç Zinciri */}
+        <OrucZinciri />
 
         {/* Günün Ayeti */}
         <View style={styles.ayetKart}>

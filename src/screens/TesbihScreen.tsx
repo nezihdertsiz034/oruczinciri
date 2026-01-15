@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,14 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  FlatList,
+  Dimensions,
+  Switch,
+  Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { BackgroundDecor } from '../components/BackgroundDecor';
@@ -25,6 +30,9 @@ import {
 import { TesbihKaydi } from '../types';
 
 const HIZLI_HEDEFLER = [33, 99, 100];
+const { width: EKRAN_GENISLIK } = Dimensions.get('window');
+const TESBIH_BOYUT = Math.min(EKRAN_GENISLIK * 0.85, 340);
+const BONCUK_SAYISI = 33;
 
 const ZIKIR_SECENEKLERI = [
   { id: 'subhanallah', adi: 'Sübhanallah', emoji: '📿' },
@@ -36,6 +44,50 @@ const ZIKIR_SECENEKLERI = [
   { id: 'diger', adi: 'Diğer', emoji: '✨' },
 ];
 
+// Tesbih boncuğu bileşeni
+const TesbihBoncugu = ({
+  index,
+  aktif,
+  gecmis,
+  toplam,
+  animasyonDeger
+}: {
+  index: number;
+  aktif: boolean;
+  gecmis: boolean;
+  toplam: number;
+  animasyonDeger: Animated.Value;
+}) => {
+  const aci = (index / toplam) * 2 * Math.PI - Math.PI / 2;
+  const yaricap = TESBIH_BOYUT / 2 - 25;
+  const x = Math.cos(aci) * yaricap;
+  const y = Math.sin(aci) * yaricap;
+
+  const olcek = animasyonDeger.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: aktif ? [1, 1.4, 1] : [1, 1, 1],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.boncuk,
+        {
+          left: TESBIH_BOYUT / 2 + x - 12,
+          top: TESBIH_BOYUT / 2 + y - 12,
+          backgroundColor: gecmis
+            ? ISLAMI_RENKLER.altinOrta
+            : aktif
+              ? ISLAMI_RENKLER.altinAcik
+              : 'rgba(255, 255, 255, 0.2)',
+          transform: [{ scale: olcek }],
+          shadowOpacity: aktif ? 0.6 : 0.2,
+        },
+      ]}
+    />
+  );
+};
+
 export default function TesbihScreen() {
   const [sayac, setSayac] = useState(0);
   const [hedef, setHedef] = useState(33);
@@ -44,6 +96,15 @@ export default function TesbihScreen() {
   const [seciliZikir, setSeciliZikir] = useState(ZIKIR_SECENEKLERI[0]);
   const [kayitlar, setKayitlar] = useState<TesbihKaydi[]>([]);
   const [kayitlarGoster, setKayitlarGoster] = useState(false);
+
+  // Ayarlar
+  const [titresimAktif, setTitresimAktif] = useState(true);
+  const [sesAktif, setSesAktif] = useState(true);
+  const [ayarlarGoster, setAyarlarGoster] = useState(false);
+
+  // Animasyon
+  const animasyonDeger = useRef(new Animated.Value(0)).current;
+  const soundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
     let aktif = true;
@@ -60,11 +121,44 @@ export default function TesbihScreen() {
     };
 
     yukleVeri();
+    sesiYukle();
 
     return () => {
       aktif = false;
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
     };
   }, []);
+
+  const sesiYukle = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../../assets/ney.mp3'),
+        { volume: 0.3 }
+      );
+      soundRef.current = sound;
+    } catch (error) {
+      console.log('Ses yüklenirken hata:', error);
+    }
+  };
+
+  const sesCal = async () => {
+    if (sesAktif && soundRef.current) {
+      try {
+        await soundRef.current.setPositionAsync(0);
+        await soundRef.current.playAsync();
+        // Kısa süre sonra durdur (tık sesi için)
+        setTimeout(async () => {
+          if (soundRef.current) {
+            await soundRef.current.stopAsync();
+          }
+        }, 150);
+      } catch (error) {
+        // Ignore
+      }
+    }
+  };
 
   useEffect(() => {
     if (yukleniyor) return;
@@ -77,11 +171,31 @@ export default function TesbihScreen() {
     });
   }, [sayac, hedef, yukleniyor]);
 
-  const handleArtir = () => {
+  const handleArtir = async () => {
+    // Titreşim
+    if (titresimAktif) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    // Ses
+    sesCal();
+
+    // Animasyon
+    animasyonDeger.setValue(0);
+    Animated.timing(animasyonDeger, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+
     setSayac((onceki) => onceki + 1);
   };
 
   const handleAzalt = () => {
+    if (titresimAktif) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setSayac((onceki) => Math.max(0, onceki - 1));
   };
 
@@ -91,7 +205,6 @@ export default function TesbihScreen() {
       return;
     }
 
-    // Kaydı oluştur
     const yeniKayit: TesbihKaydi = {
       id: Date.now().toString(),
       zikirAdi: seciliZikir.adi,
@@ -101,16 +214,17 @@ export default function TesbihScreen() {
 
     try {
       await kaydetTesbihKaydi(yeniKayit);
-
-      // Kayıtları güncelle
       const guncelKayitlar = await yukleTesbihKayitlari();
       setKayitlar(guncelKayitlar);
 
-      // Sayacı sıfırla
       const sifirlanmis = await sifirlaTesbihSayaci();
       setSayac(sifirlanmis.sayac);
       setHedef(sifirlanmis.hedef);
       setHedefInput(String(sifirlanmis.hedef));
+
+      if (titresimAktif) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
 
       Alert.alert(
         '✅ Kaydedildi',
@@ -124,7 +238,7 @@ export default function TesbihScreen() {
   const handleSifirla = async () => {
     Alert.alert(
       'Sıfırla',
-      'Sayacı sıfırlamak istediğinize emin misiniz? (Kaydetmeden sıfırlanacak)',
+      'Sayacı sıfırlamak istediğinize emin misiniz?',
       [
         { text: 'İptal', style: 'cancel' },
         {
@@ -135,6 +249,9 @@ export default function TesbihScreen() {
             setSayac(sifirlanmis.sayac);
             setHedef(sifirlanmis.hedef);
             setHedefInput(String(sifirlanmis.hedef));
+            if (titresimAktif) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            }
           },
         },
       ]
@@ -190,27 +307,8 @@ export default function TesbihScreen() {
 
   const ilerlemeYuzde = hedef > 0 ? Math.min(100, (sayac / hedef) * 100) : 0;
   const kalan = Math.max(0, hedef - sayac);
-
-  const renderKayit = ({ item }: { item: TesbihKaydi }) => (
-    <View style={styles.kayitItem}>
-      <View style={styles.kayitIcerik}>
-        <Text style={styles.kayitZikir}>{item.zikirAdi}</Text>
-        <Text style={styles.kayitTarih}>{formatTarih(item.tarih)}</Text>
-      </View>
-      <View style={styles.kayitSagTaraf}>
-        <View style={styles.kayitAdetContainer}>
-          <Text style={styles.kayitAdet}>{item.adet}</Text>
-          <Text style={styles.kayitAdetLabel}>adet</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.silButonu}
-          onPress={() => handleKayitSil(item.id)}
-        >
-          <Text style={styles.silButonuText}>✕</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const boncukSayisi = Math.min(hedef, BONCUK_SAYISI);
+  const aktifBoncuk = sayac % boncukSayisi;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -247,19 +345,48 @@ export default function TesbihScreen() {
           </ScrollView>
         </View>
 
-        {/* Sayaç Kartı */}
-        <View style={styles.sayacKart}>
-          <Text style={styles.seciliZikirText}>{seciliZikir.emoji} {seciliZikir.adi}</Text>
-          <Text style={styles.sayacDeger}>{sayac}</Text>
-          <Text style={styles.hedefText}>Hedef: {hedef}</Text>
-          <ProgressBar yuzdelik={ilerlemeYuzde} yukseklik={12} gosterYuzde={false} />
-          <View style={styles.kalanSatir}>
-            <Text style={styles.kalanLabel}>Kalan</Text>
-            <Text style={styles.kalanDeger}>{kalan}</Text>
+        {/* Görsel Tesbih */}
+        <TouchableOpacity
+          style={styles.tesbihContainer}
+          onPress={handleArtir}
+          activeOpacity={0.9}
+        >
+          <View style={styles.tesbihDaire}>
+            {/* Boncuklar */}
+            {Array.from({ length: boncukSayisi }).map((_, index) => (
+              <TesbihBoncugu
+                key={index}
+                index={index}
+                aktif={index === aktifBoncuk}
+                gecmis={index < aktifBoncuk || (sayac >= boncukSayisi && sayac % boncukSayisi > index)}
+                toplam={boncukSayisi}
+                animasyonDeger={animasyonDeger}
+              />
+            ))}
+
+            {/* Merkez Sayaç */}
+            <View style={styles.merkezContainer}>
+              <Text style={styles.seciliZikirText}>{seciliZikir.emoji}</Text>
+              <Text style={styles.sayacDeger}>{sayac}</Text>
+              <Text style={styles.hedefText}>/ {hedef}</Text>
+              <Text style={styles.turText}>
+                {Math.floor(sayac / boncukSayisi)}. tur
+              </Text>
+            </View>
           </View>
-          {sayac >= hedef && (
-            <Text style={styles.hedefTamamText}>Hedef tamamlandı! 🎉</Text>
-          )}
+
+          <Text style={styles.dokunText}>Çekmek için dokun</Text>
+        </TouchableOpacity>
+
+        {/* İlerleme */}
+        <View style={styles.ilerlemeBilgi}>
+          <ProgressBar yuzdelik={ilerlemeYuzde} yukseklik={10} gosterYuzde={false} />
+          <View style={styles.kalanSatir}>
+            <Text style={styles.kalanLabel}>Kalan: {kalan}</Text>
+            {sayac >= hedef && (
+              <Text style={styles.hedefTamamText}>🎉 Hedef tamam!</Text>
+            )}
+          </View>
         </View>
 
         {/* Kontrol Butonları */}
@@ -267,13 +394,43 @@ export default function TesbihScreen() {
           <TouchableOpacity style={styles.kontrolButonu} onPress={handleAzalt}>
             <Text style={styles.kontrolButonuText}>-1</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tiklaButonu} onPress={handleArtir} activeOpacity={0.85}>
-            <Text style={styles.tiklaButonuText}>+1</Text>
+          <TouchableOpacity style={styles.sifirlaButonu} onPress={handleSifirla}>
+            <Text style={styles.kontrolButonuText}>🔄</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.kontrolButonu} onPress={handleSifirla}>
-            <Text style={styles.kontrolButonuText}>Sıfırla</Text>
+          <TouchableOpacity
+            style={styles.ayarlarButonu}
+            onPress={() => setAyarlarGoster(!ayarlarGoster)}
+          >
+            <Text style={styles.kontrolButonuText}>⚙️</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Ayarlar Paneli */}
+        {ayarlarGoster && (
+          <View style={styles.ayarlarKart}>
+            <Text style={styles.bolumBaslik}>⚙️ Ayarlar</Text>
+
+            <View style={styles.ayarSatir}>
+              <Text style={styles.ayarLabel}>📳 Titreşim</Text>
+              <Switch
+                value={titresimAktif}
+                onValueChange={setTitresimAktif}
+                trackColor={{ false: 'rgba(255,255,255,0.2)', true: ISLAMI_RENKLER.altinOrta }}
+                thumbColor={titresimAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
+              />
+            </View>
+
+            <View style={styles.ayarSatir}>
+              <Text style={styles.ayarLabel}>🔊 Ses</Text>
+              <Switch
+                value={sesAktif}
+                onValueChange={setSesAktif}
+                trackColor={{ false: 'rgba(255,255,255,0.2)', true: ISLAMI_RENKLER.altinOrta }}
+                thumbColor={sesAktif ? ISLAMI_RENKLER.altinAcik : '#f4f3f4'}
+              />
+            </View>
+          </View>
+        )}
 
         {/* Kaydet Butonu */}
         <TouchableOpacity
@@ -321,14 +478,14 @@ export default function TesbihScreen() {
             style={styles.kayitlarBaslik}
             onPress={() => setKayitlarGoster(!kayitlarGoster)}
           >
-            <Text style={styles.bolumBaslik}>📜 Geçmiş Kayıtlar ({kayitlar.length})</Text>
+            <Text style={styles.bolumBaslik}>📜 Geçmiş ({kayitlar.length})</Text>
             <Text style={styles.acKapaIcon}>{kayitlarGoster ? '▼' : '▶'}</Text>
           </TouchableOpacity>
 
           {kayitlarGoster && (
             <View style={styles.kayitlarListe}>
               {kayitlar.length === 0 ? (
-                <Text style={styles.bosKayitText}>Henüz kayıt yok. Tesbih çekip kaydedin!</Text>
+                <Text style={styles.bosKayitText}>Henüz kayıt yok.</Text>
               ) : (
                 kayitlar.slice(0, 10).map((kayit) => (
                   <View key={kayit.id} style={styles.kayitItem}>
@@ -339,7 +496,6 @@ export default function TesbihScreen() {
                     <View style={styles.kayitSagTaraf}>
                       <View style={styles.kayitAdetContainer}>
                         <Text style={styles.kayitAdet}>{kayit.adet}</Text>
-                        <Text style={styles.kayitAdetLabel}>adet</Text>
                       </View>
                       <TouchableOpacity
                         style={styles.silButonu}
@@ -350,9 +506,6 @@ export default function TesbihScreen() {
                     </View>
                   </View>
                 ))
-              )}
-              {kayitlar.length > 10 && (
-                <Text style={styles.dahaFazlaText}>... ve {kayitlar.length - 10} kayıt daha</Text>
               )}
             </View>
           )}
@@ -371,21 +524,22 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingBottom: 40,
+    alignItems: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: ISLAMI_RENKLER.yaziBeyaz,
-    marginBottom: 24,
+    marginBottom: 20,
     textAlign: 'center',
     fontFamily: TYPOGRAPHY.display,
-    letterSpacing: 0.4,
   },
   zikirSecimKart: {
     backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
     borderRadius: 20,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 20,
+    width: '100%',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
@@ -420,70 +574,124 @@ const styles = StyleSheet.create({
   zikirChipTextAktif: {
     fontWeight: '700',
   },
-  sayacKart: {
-    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
-    borderRadius: 20,
-    padding: 24,
+  tesbihContainer: {
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  tesbihDaire: {
+    width: TESBIH_BOYUT,
+    height: TESBIH_BOYUT,
+    borderRadius: TESBIH_BOYUT / 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 3,
+    borderColor: ISLAMI_RENKLER.altinOrta,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: ISLAMI_RENKLER.altinOrta,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  boncuk: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  merkezContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: TESBIH_BOYUT * 0.55,
+    height: TESBIH_BOYUT * 0.55,
+    borderRadius: TESBIH_BOYUT * 0.275,
+    borderWidth: 2,
+    borderColor: ISLAMI_RENKLER.altinOrta,
   },
   seciliZikirText: {
-    fontSize: 16,
-    color: ISLAMI_RENKLER.altinAcik,
-    textAlign: 'center',
-    marginBottom: 8,
-    fontWeight: '600',
-    fontFamily: TYPOGRAPHY.display,
+    fontSize: 28,
+    marginBottom: 4,
   },
   sayacDeger: {
-    fontSize: 64,
+    fontSize: 52,
     fontWeight: 'bold',
     color: ISLAMI_RENKLER.altinAcik,
-    textAlign: 'center',
     fontFamily: TYPOGRAPHY.display,
     letterSpacing: 1,
   },
   hedefText: {
-    fontSize: 16,
+    fontSize: 18,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
-    textAlign: 'center',
-    marginBottom: 16,
     fontFamily: TYPOGRAPHY.body,
+  },
+  turText: {
+    fontSize: 12,
+    color: ISLAMI_RENKLER.altinOrta,
+    marginTop: 4,
+    fontFamily: TYPOGRAPHY.body,
+  },
+  dokunText: {
+    marginTop: 12,
+    color: ISLAMI_RENKLER.yaziBeyazYumusak,
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.body,
+  },
+  ilerlemeBilgi: {
+    width: '100%',
+    marginBottom: 20,
   },
   kalanSatir: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: 8,
   },
   kalanLabel: {
     fontSize: 14,
     color: ISLAMI_RENKLER.yaziBeyazYumusak,
     fontFamily: TYPOGRAPHY.body,
   },
-  kalanDeger: {
-    fontSize: 16,
-    color: ISLAMI_RENKLER.yaziBeyaz,
-    fontWeight: '600',
-    fontFamily: TYPOGRAPHY.display,
-  },
   hedefTamamText: {
-    marginTop: 12,
-    textAlign: 'center',
     color: ISLAMI_RENKLER.yesilParlak,
     fontWeight: '700',
     fontFamily: TYPOGRAPHY.display,
   },
   butonlarSatir: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     gap: 12,
+    width: '100%',
   },
   kontrolButonu: {
-    flex: 1,
     paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  sifirlaButonu: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 100, 100, 0.2)',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 100, 100, 0.3)',
+  },
+  ayarlarButonu: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
@@ -492,29 +700,35 @@ const styles = StyleSheet.create({
   },
   kontrolButonuText: {
     color: ISLAMI_RENKLER.yaziBeyaz,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     fontFamily: TYPOGRAPHY.display,
   },
-  tiklaButonu: {
-    flex: 1.3,
-    paddingVertical: 18,
+  ayarlarKart: {
+    backgroundColor: ISLAMI_RENKLER.arkaPlanYesilOrta,
     borderRadius: 16,
-    backgroundColor: ISLAMI_RENKLER.altinOrta,
-    alignItems: 'center',
+    padding: 16,
+    width: '100%',
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  tiklaButonuText: {
+  ayarSatir: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  ayarLabel: {
     color: ISLAMI_RENKLER.yaziBeyaz,
-    fontSize: 18,
-    fontWeight: '700',
-    fontFamily: TYPOGRAPHY.display,
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.body,
   },
   kaydetButonu: {
     backgroundColor: ISLAMI_RENKLER.yesilParlak,
     borderRadius: 16,
     paddingVertical: 16,
+    paddingHorizontal: 40,
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
@@ -524,6 +738,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+    width: '100%',
   },
   kaydetButonuText: {
     color: ISLAMI_RENKLER.yaziBeyaz,
@@ -538,6 +753,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
     marginBottom: 16,
+    width: '100%',
   },
   bolumBaslik: {
     fontSize: 16,
@@ -598,6 +814,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+    width: '100%',
   },
   kayitlarBaslik: {
     flexDirection: 'row',
@@ -662,11 +879,6 @@ const styles = StyleSheet.create({
     color: ISLAMI_RENKLER.altinAcik,
     fontFamily: TYPOGRAPHY.display,
   },
-  kayitAdetLabel: {
-    fontSize: 10,
-    color: ISLAMI_RENKLER.altinOrta,
-    fontFamily: TYPOGRAPHY.body,
-  },
   silButonu: {
     width: 28,
     height: 28,
@@ -679,12 +891,5 @@ const styles = StyleSheet.create({
     color: '#ff6b6b',
     fontSize: 14,
     fontWeight: '600',
-  },
-  dahaFazlaText: {
-    textAlign: 'center',
-    color: ISLAMI_RENKLER.yaziBeyazYumusak,
-    fontSize: 12,
-    marginTop: 8,
-    fontFamily: TYPOGRAPHY.body,
   },
 });

@@ -223,7 +223,7 @@ export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = f
 
               {/* Merkez içerik */}
               <View style={styles.centerContent}>
-                <Text style={styles.centerIcon}>☪️</Text>
+                <Text style={styles.arabicAllah}>الله</Text>
                 <View style={styles.timeContainer}>
                   <View style={styles.timeBlock}>
                     <Text style={styles.timeNumber}>{String(zaman.saat).padStart(2, '0')}</Text>
@@ -295,6 +295,7 @@ export const OrucSayaci: React.FC<OrucSayaciProps> = ({ vakitler, yukleniyor = f
       )}
     </View>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -371,10 +372,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  arabicAllah: {
+    fontSize: 36,
+    color: ISLAMI_RENKLER.altinAcik,
+    fontWeight: '400',
+    marginBottom: 4,
+    textShadowColor: 'rgba(218, 165, 32, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+  },
   centerIcon: {
     fontSize: 32,
     marginBottom: 8,
   },
+
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
