@@ -23,6 +23,16 @@ import { SaatSecici } from '../components/SaatSecici';
 import { TarihSecici } from '../components/TarihSecici';
 import { scheduleNotBildirimi, cancelNotBildirimi } from '../hooks/useBildirimler';
 
+const NOT_SABLONLARI = [
+  { id: '1', baslik: '🌙 İftar Daveti', icerik: 'İftara gidilecek. Yer: ', ikon: '🥘' },
+  { id: '2', baslik: '🥘 İftar Verilecek', icerik: 'İftar daveti verilecek. Menü: ', ikon: '👨‍👩‍👧‍👦' },
+  { id: '3', baslik: '☕ Sahur Programı', icerik: 'Sahur için hazırlık yapılacak.', ikon: '🌙' },
+  { id: '4', baslik: '🕌 Teravih Namazı', icerik: 'Bu akşam Teravih için camiye gidilecek.', ikon: '🕋' },
+  { id: '5', baslik: '📖 Kur\'an Mukabelesi', icerik: 'Günün cüzü okunacak.', ikon: '📖' },
+  { id: '6', baslik: '🤝 Akraba Ziyareti', icerik: 'Sıla-i rahim yapılacak.', ikon: '🏠' },
+  { id: '7', baslik: '🤲 Kandil Özel', icerik: 'Mübarek gecenin ihyası için dua ve ibadet.', ikon: '✨' },
+];
+
 export default function NotlarScreen() {
   const { notlar, yukleniyor, notKaydet, notSil } = useNotlar();
   const tema = useTheme();
@@ -79,6 +89,11 @@ export default function NotlarScreen() {
     setIcerik(not.icerik);
     setHatirlatici(not.hatirlatici);
     setModalVisible(true);
+  };
+
+  const applySablon = (sablon: typeof NOT_SABLONLARI[0]) => {
+    setBaslik(sablon.baslik);
+    setIcerik(sablon.icerik);
   };
 
   const handleNotKaydet = async () => {
@@ -240,6 +255,23 @@ export default function NotlarScreen() {
             <Text style={[styles.modalBaslik, { color: tema.yaziRenk }]}>
               {seciliNot ? 'Notu Düzenle' : 'Yeni Not Ekle'}
             </Text>
+
+            {!seciliNot && (
+              <View style={styles.sablonlarContainer}>
+                <Text style={[styles.sablonBaslik, { color: tema.yaziRenkSoluk }]}>Hızlı Şablonlar</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sablonScroll}>
+                  {NOT_SABLONLARI.map(sablon => (
+                    <TouchableOpacity
+                      key={sablon.id}
+                      style={[styles.sablonChip, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: `${tema.vurgu}30` }]}
+                      onPress={() => applySablon(sablon)}
+                    >
+                      <Text style={styles.sablonText}>{sablon.ikon} {sablon.baslik.split(' ')[1]}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
             <TextInput
               style={[styles.input, { color: tema.yaziRenk, borderColor: `${tema.vurgu}20`, backgroundColor: tema.arkaPlan === '#05111A' ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.15)' }]}
@@ -585,5 +617,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     fontFamily: TYPOGRAPHY.body,
+  },
+  sablonlarContainer: {
+    marginBottom: 16,
+  },
+  sablonBaslik: {
+    fontSize: 12,
+    marginBottom: 8,
+    fontFamily: TYPOGRAPHY.body,
+    paddingLeft: 4,
+  },
+  sablonScroll: {
+    flexDirection: 'row',
+  },
+  sablonChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginRight: 8,
+    borderWidth: 1,
+  },
+  sablonText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
