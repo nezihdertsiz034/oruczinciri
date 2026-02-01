@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
+import { bugunRamazanMi } from '../utils/ramazanTarihleri';
 
 // Hücre boyutları - Yüzde bazlı genişlik ve sabit yükseklik ile hizalamayı garanti altına alıyoruz
 const CELL_WIDTH = '14.28%';
@@ -66,6 +67,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                 gunNo: i,
                 orucTutuldu: halka?.isaretli ?? false,
                 bugunMu,
+                isRamazan: bugunRamazanMi(tarih),
             });
         }
 
@@ -131,6 +133,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                             key={gun.gunNo}
                             style={[
                                 styles.gunHucre,
+                                gun.isRamazan && styles.ramazanHucre,
                                 gun.bugunMu && styles.bugunHucre,
                                 gun.orucTutuldu && styles.orucTutulduHucre,
                             ]}
@@ -139,14 +142,15 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                         >
                             <Text style={[
                                 styles.gunNumara,
+                                gun.isRamazan && styles.ramazanNumara,
                                 gun.bugunMu && styles.bugunNumara,
                                 gun.orucTutuldu && styles.orucTutulduNumara,
                             ]}>
                                 {gun.gunNo}
                             </Text>
-                            {gun.orucTutuldu && (
+                            {(gun.orucTutuldu || (gun.isRamazan && gun.tarih < new Date())) && (
                                 <View style={styles.orucIsareti}>
-                                    <Text style={styles.orucEmoji}>✓</Text>
+                                    <Text style={styles.orucEmoji}>{gun.orucTutuldu ? '✓' : ''}</Text>
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -346,5 +350,19 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: ISLAMI_RENKLER.yaziBeyazYumusak,
         fontFamily: TYPOGRAPHY.body,
+    },
+    ramazanHucre: {
+        backgroundColor: 'rgba(218, 165, 32, 0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(218, 165, 32, 0.3)',
+        shadowColor: ISLAMI_RENKLER.altinAcik,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    ramazanNumara: {
+        color: ISLAMI_RENKLER.altinAcik,
+        fontWeight: '700',
     },
 });
