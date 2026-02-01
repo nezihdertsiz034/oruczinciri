@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
-import { bugunRamazanMi } from '../utils/ramazanTarihleri';
+import { bugunRamazanMi, isBayram } from '../utils/ramazanTarihleri';
 
 // Hücre boyutları - Yüzde bazlı genişlik ve sabit yükseklik ile hizalamayı garanti altına alıyoruz
 const CELL_WIDTH = '14.28%';
@@ -68,6 +68,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                 orucTutuldu: halka?.isaretli ?? false,
                 bugunMu,
                 isRamazan: bugunRamazanMi(tarih),
+                isBayram: isBayram(tarih),
             });
         }
 
@@ -134,6 +135,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                             style={[
                                 styles.gunHucre,
                                 gun.isRamazan && styles.ramazanHucre,
+                                gun.isBayram && styles.bayramHucre,
                                 gun.bugunMu && styles.bugunHucre,
                                 gun.orucTutuldu && styles.orucTutulduHucre,
                             ]}
@@ -143,6 +145,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
                             <Text style={[
                                 styles.gunNumara,
                                 gun.isRamazan && styles.ramazanNumara,
+                                gun.isBayram && styles.bayramNumara,
                                 gun.bugunMu && styles.bugunNumara,
                                 gun.orucTutuldu && styles.orucTutulduNumara,
                             ]}>
@@ -364,5 +367,19 @@ const styles = StyleSheet.create({
     ramazanNumara: {
         color: ISLAMI_RENKLER.altinAcik,
         fontWeight: '700',
+    },
+    bayramHucre: {
+        backgroundColor: 'rgba(46, 204, 113, 0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(46, 204, 113, 0.3)',
+        shadowColor: '#2ecc71',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    bayramNumara: {
+        color: '#2ecc71',
+        fontWeight: '800',
     },
 });

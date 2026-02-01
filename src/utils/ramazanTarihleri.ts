@@ -47,6 +47,42 @@ export function stringToTarih(tarihString: string): Date {
 }
 
 /**
+ * Bayram 2026 tarihlerini döndürür
+ * @returns { ramazanBayrami: Date[], kurbanBayrami: Date[] }
+ */
+export function getBayram2026Tarihleri(): { ramazanBayrami: Date[], kurbanBayrami: Date[] } {
+  const ramazanBayrami = [
+    new Date(2026, 2, 20),
+    new Date(2026, 2, 21),
+    new Date(2026, 2, 22),
+  ];
+
+  const kurbanBayrami = [
+    new Date(2026, 4, 27),
+    new Date(2026, 4, 28),
+    new Date(2026, 4, 29),
+    new Date(2026, 4, 30),
+  ];
+
+  // Saatleri sıfırla
+  [...ramazanBayrami, ...kurbanBayrami].forEach(d => d.setHours(0, 0, 0, 0));
+
+  return { ramazanBayrami, kurbanBayrami };
+}
+
+/**
+ * Belirli bir tarihin Bayram olup olmadığını kontrol eder
+ * @param tarih - Kontrol edilecek tarih
+ * @returns boolean - Bayram mı?
+ */
+export function isBayram(tarih: Date): boolean {
+  const { ramazanBayrami, kurbanBayrami } = getBayram2026Tarihleri();
+  const kontrolTarihStr = tarih.toISOString().split('T')[0];
+
+  return [...ramazanBayrami, ...kurbanBayrami].some(bt => bt.toISOString().split('T')[0] === kontrolTarihStr);
+}
+
+/**
  * Belirli bir tarihin Ramazan 2026 içinde olup olmadığını kontrol eder
  * @param tarih - Kontrol edilecek tarih
  * @returns boolean - Ramazan içinde mi?
