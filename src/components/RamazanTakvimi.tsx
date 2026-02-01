@@ -20,41 +20,59 @@ interface RamazanTakvimiProps {
 export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
     const { zincirHalkalari, toplamIsaretli } = useOrucZinciri();
 
-    // Ramazan başlangıç ve bitiş tarihlerini hesapla (örnek: 2026 Ramazan)
-    // Ramazan başlangıç ve bitiş tarihlerini hesapla
-    const ramazanGunleri = useMemo(() => {
-        const tarihler = getRamazan2026Tarihleri();
+    // Mevcut ay bilgilerini hesapla
+    const ayBilgileri = useMemo(() => {
+        const simdi = new Date();
+        const yil = simdi.getFullYear();
+        const ay = simdi.getMonth(); // 0-11
+
+        // Ay ismini al (Türkçe)
+        const ayIsmi = new Intl.DateTimeFormat('tr-TR', { month: 'long' }).format(simdi);
+        const ayIsmiBuyuk = ayIsmi.charAt(0).toUpperCase() + ayIsmi.slice(1);
+
+        // Ayın ilk günü ve son gününü bul
+        const ilkGun = new Date(yil, ay, 1);
+        const sonGun = new Date(yil, ay + 1, 0);
+        const gunSayisi = sonGun.getDate();
+
+        const gunler = [];
         const bugun = new Date();
         bugun.setHours(0, 0, 0, 0);
 
-        return tarihler.map((tarih, index) => {
+        for (let i = 1; i <= gunSayisi; i++) {
+            const tarih = new Date(yil, ay, i);
             const bugunMu = tarih.getTime() === bugun.getTime();
 
-            // Oruç tutulup tutulmadığını kontrol et
+            // Oruç durumunu kontrol et
             const halka = zincirHalkalari.find(h => {
                 const hTarih = new Date(h.tarih);
                 hTarih.setHours(0, 0, 0, 0);
                 return hTarih.getTime() === tarih.getTime();
             });
 
-            return {
+            gunler.push({
                 tarih,
-                gunNo: index + 1,
+                gunNo: i,
                 orucTutuldu: halka?.isaretli ?? false,
                 bugunMu,
-            };
-        });
+            });
+        }
+
+        return {
+            ayIsmi: ayIsmiBuyuk,
+            yil,
+            gunler,
+            ilkGunHaftaGunu: ilkGun.getDay(),
+            toplamGun: gunSayisi
+        };
     }, [zincirHalkalari]);
 
-    // Hafta günleri başlıkları
+    // Hafta günleri başlıkları (Pazartesi ile başlama tercihi olabilir ama standart Pazar)
     const haftaGunleri = ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
 
-    // İlk günün haftanın hangi gününe denk geldiğini bul
-    const ilkGunHaftaGunu = ramazanGunleri.length > 0 ? ramazanGunleri[0].tarih.getDay() : 0;
-
     // Grid için boş hücreler ekle
-    const bosluklar = Array(ilkGunHaftaGunu).fill(null);
-    const tumHucreler = [...bosluklar, ...ramazanGunleri];
+    const bosluklar = Array(ayBilgileri.ilkGunHaftaGunu).fill(null);
+    const tumHucreler = [...bosluklar, ...ayBilgileri.gunler];
 
     return (
         <View style={styles.container}>
@@ -62,12 +80,12 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <View style={styles.calendarIcon}>
-                        <Text style={styles.headerEmoji}>🌙</Text>
+                        <Text style={styles.headerEmoji}>📅</Text>
                     </View>
-                    <Text style={styles.headerTitle}>Ramazan Takvimi</Text>
+                    <Text style={styles.headerTitle}>{ayBilgileri.ayIsmi} {ayBilgileri.yil}</Text>
                 </View>
                 <View style={styles.headerRight}>
-                    <Text style={styles.orucSayisi}>{toplamIsaretli}/30</Text>
+                    <Text style={styles.orucSayisi}>{toplamIsaretli}/{ayBilgileri.toplamGun}</Text>
                     <Text style={styles.orucLabel}>tamamlandı</Text>
                 </View>
             </View>
