@@ -713,7 +713,7 @@ export default function AyarlarScreen() {
           <Text style={styles.ayarBaslik}>ℹ️ Hakkında</Text>
           <Text style={styles.hakkindaText}>
             Şükür365 - Günlük Manevi Takip{'\n'}
-            Versiyon: 1.0.30{'\n'}
+            Versiyon: 1.0.4{'\n'}
             2026{'\n\n'}
             Bu uygulama, oruç tutmanızı takip etmenize,
             namaz vakitlerini öğrenmenize ve dini içeriklerle manevi yolculuğunuzu
