@@ -5,7 +5,7 @@ import messaging from '@react-native-firebase/messaging';
 import { yukleBildirimAyarlari, yukleSehir } from '../utils/storage';
 import { logger } from '../utils/logger';
 import { getNamazVakitleri } from '../utils/namazVakitleri';
-import { configureNotifications, CHANNEL_HATIRLATICI } from '../services/notifications/configureNotifications';
+import { configureNotifications, CHANNEL_HATIRLATICI, CHANNEL_EZAN } from '../services/notifications/configureNotifications';
 import { supabase } from '../utils/supabaseClient';
 
 /**
@@ -192,13 +192,19 @@ async function planlaYerelBildirimler() {
             if (bildirimTarih <= new Date()) continue;
 
             if (ayarlar.namazVakitleriAktif) {
+              const isGunes = key === 'gunes';
+              const title = isGunes ? '⚠️ Vakit Çıktı' : `🕌 ${vakitIsimleri[key as keyof typeof vakitIsimleri]} Vakti`;
+              const body = isGunes
+                ? 'Güneş doğdu, sabah namazı vakti çıktı. Namazınız kazaya kaldı.'
+                : `${sehir.isim} için ${vakitIsimleri[key as keyof typeof vakitIsimleri]} vakti geldi.`;
+
               await Notifications.scheduleNotificationAsync({
                 content: {
-                  title: `🕌 ${vakitIsimleri[key as keyof typeof vakitIsimleri]} Vakti`,
-                  body: `${sehir.isim} için ${vakitIsimleri[key as keyof typeof vakitIsimleri]} vakti geldi.`,
-                  sound: 'ezan.mp3',
+                  title: title,
+                  body: body,
+                  sound: isGunes ? 'yunus_emre.mp3' : 'ezan.mp3',
                   ...(Platform.OS === 'android' && {
-                    channelId: CHANNEL_EZAN,
+                    channelId: isGunes ? CHANNEL_HATIRLATICI : CHANNEL_EZAN,
                     priority: Notifications.AndroidNotificationPriority.MAX,
                   }),
                   categoryIdentifier: key === 'aksam' || key === 'imsak' ? 'ramazan' : undefined,
