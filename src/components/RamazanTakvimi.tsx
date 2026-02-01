@@ -33,7 +33,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
 
     // Mevcut ay bilgilerini hesapla
     const ayBilgileri = useMemo(() => {
-        const simdi = new Date();
+        const simdi = viewDate;
         const yil = simdi.getFullYear();
         const ay = simdi.getMonth(); // 0-11
 
@@ -76,7 +76,7 @@ export const RamazanTakvimi: React.FC<RamazanTakvimiProps> = ({ onGunSec }) => {
             ilkGunHaftaGunu: ilkGun.getDay(),
             toplamGun: gunSayisi
         };
-    }, [zincirHalkalari]);
+    }, [zincirHalkalari, viewDate]);
 
     // Hafta günleri başlıkları (Pazartesi ile başlama tercihi olabilir ama standart Pazar)
     const haftaGunleri = ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
