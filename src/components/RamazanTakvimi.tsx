@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
-import { getRamazan2026Tarihleri } from '../utils/ramazanTarihleri';
 
 // Hücre boyutları - Yüzde bazlı genişlik ve sabit yükseklik ile hizalamayı garanti altına alıyoruz
 const CELL_WIDTH = '14.28%';
