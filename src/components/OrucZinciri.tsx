@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ISLAMI_RENKLER } from '../constants/renkler';
 import { TYPOGRAPHY } from '../constants/typography';
 import { useOrucZinciri } from '../hooks/useOrucZinciri';
@@ -62,6 +63,8 @@ export const OrucZinciri: React.FC = () => {
         <View style={[styles.progressBarFill, { width: `${yuzde}%` }]} />
       </View>
 
+      <Text style={styles.ayBasligi}>🌙 Ramazan-ı Şerif</Text>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -100,7 +103,11 @@ export const OrucZinciri: React.FC = () => {
                       ]}>
                         {halka.gunNumarasi}
                       </Text>
-                      {halka.isaretli && <Text style={styles.checkMark}>✓</Text>}
+                      {halka.isaretli && (
+                        <View style={styles.checkmarkContainer}>
+                          <Ionicons name="checkmark-circle" size={24} color={ISLAMI_RENKLER.altinAcik} />
+                        </View>
+                      )}
                     </TouchableOpacity>
                   </View>
                 );
@@ -266,16 +273,26 @@ const styles = StyleSheet.create({
   },
   linkTextCompleted: {
     color: ISLAMI_RENKLER.altinAcik,
-    fontSize: 11,
-    opacity: 0, // Markayı göstermek için numarayı gizleyebiliriz veya üstüne koyabiliriz
+    fontSize: 10,
+    opacity: 0.3, // Numara arkada hafif kalsın
   },
-  checkMark: {
+  checkmarkContainer: {
     position: 'absolute',
-    fontSize: 18,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  ayBasligi: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: ISLAMI_RENKLER.altinAcik,
-    fontWeight: '900',
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowRadius: 4,
+    fontFamily: TYPOGRAPHY.display,
+    textAlign: 'center',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
   },
   footer: {
     marginTop: 24,
