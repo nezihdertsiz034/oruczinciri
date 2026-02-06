@@ -193,7 +193,7 @@ export async function yukleBildirimAyarlari(): Promise<BildirimAyarlari> {
       sahurSaat: '04:00',
       iftarAktif: true,
       iftarSaat: '19:00',
-      namazVakitleriAktif: false,
+      namazVakitleriAktif: true, // Varsayılan olarak açık - ezan sesi için gerekli
       gunlukHatirlaticiAktif: true,
       gunlukHatirlaticiSaat: '20:00',
       suIcmeHatirlaticiAktif: false,
@@ -214,7 +214,7 @@ export async function yukleBildirimAyarlari(): Promise<BildirimAyarlari> {
       sahurSaat: '04:00',
       iftarAktif: true,
       iftarSaat: '19:00',
-      namazVakitleriAktif: false,
+      namazVakitleriAktif: true, // Varsayılan olarak açık - ezan sesi için gerekli
       gunlukHatirlaticiAktif: true,
       gunlukHatirlaticiSaat: '20:00',
       suIcmeHatirlaticiAktif: false,

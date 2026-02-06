@@ -75,7 +75,8 @@
           "sounds": [
             "./assets/ney.mp3",
             "./assets/ezan.mp3",
-            "./assets/yunus_emre.mp3"
+            "./assets/yunus_emre.mp3",
+            "./assets/yunus_emre.caf"
           ]
         }
       ],
