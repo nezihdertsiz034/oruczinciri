@@ -24,11 +24,11 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       },
       "ios": {
-        "autoIncrement": true,
         "image": "latest"
       }
     }
@@ -37,9 +37,21 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6758509578"
+      }
+    },
+    "internal": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
         "track": "internal"
       },
-      "ios": {}
+      "ios": {
+        "ascAppId": "6758509578"
+      }
     }
   }
 }

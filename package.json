@@ -7,10 +7,21 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:android": "npx eas-cli build --platform android --profile production",
+
+    "build:android": "npx eas-cli build --platform android --profile production --non-interactive",
     "build:ios": "npx eas-cli build --platform ios --profile production",
     "build:all": "npx eas-cli build --platform all --profile production",
-    "build:preview": "npx eas-cli build --platform android --profile preview"
+    "build:preview": "npx eas-cli build --platform android --profile preview --non-interactive",
+
+    "submit:android": "npx eas-cli submit --platform android --latest --profile internal --non-interactive",
+    "submit:ios": "npx eas-cli submit --platform ios --latest",
+
+    "publish:android": "npx eas-cli build --platform android --profile production --non-interactive && npx eas-cli submit --platform android --latest --profile internal --non-interactive",
+    "publish:ios": "npx eas-cli build --platform ios --profile production && npx eas-cli submit --platform ios --latest",
+    "publish:all": "npm run publish:android && npm run publish:ios",
+
+    "release:android": "npx eas-cli build --platform android --profile production --non-interactive && npx eas-cli submit --platform android --latest --profile production --non-interactive",
+    "release:ios": "npx eas-cli build --platform ios --profile production && npx eas-cli submit --platform ios --latest"
   },
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
