@@ -50,7 +50,7 @@
         "backgroundColor": "#1a5f3f"
       },
       "package": "com.nezihdertsiz.sukur360",
-      "versionCode": 15,
+      "versionCode": 16,
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -95,6 +95,8 @@
         "expo-build-properties",
         {
           "android": {
+            "targetSdkVersion": 35,
+            "compileSdkVersion": 35,
             "extraGradleArguments": [
               "-Pandroid.jvmargs=-Xmx4096m"
             ]
